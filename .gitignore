@@ -1,0 +1,5 @@
+.idea
+*_local.cue
+deploy/single-node/out
+.ijwb
+bazel-*

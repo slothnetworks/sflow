@@ -1,0 +1,4231 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "9Dw5dGzGk",
+    "namespace": "default",
+    "uid": "679KVTK490FPXeX1mFSp4p2cWsRVrRNuXLeb8Pn5w60X",
+    "resourceVersion": "1785784122629016",
+    "generation": 63,
+    "creationTimestamp": "2024-05-01T06:53:47Z",
+    "labels": {
+      "grafana.app/deprecatedInternalID": "284"
+    },
+    "annotations": {
+      "grafana.app/createdBy": "user:u000000002",
+      "grafana.app/saved-from-ui": "Grafana v13.0.2 (3fcdbc5a)",
+      "grafana.app/updatedBy": "user:u000000001",
+      "grafana.app/updatedTimestamp": "2026-08-03T19:08:42Z"
+    }
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "spec": {
+              "limit": 100,
+              "matchAny": false,
+              "tags": [],
+              "type": "dashboard"
+            }
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Filtered Flows",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT count()\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "green"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "IP Proto",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    dictGetString('IPProtocols', 'Name', toUInt64(Proto)) || ' (' || toString(Proto) || ')' AS ProtoName,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS BitsPerSecond,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY time, Proto, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.ProtoName} ${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 75,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "normal"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": ".*out"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.transform",
+                        "value": "negative-Y"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
+          "title": "Raw Flows/s Per Host",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    (count(*) / $__interval_s) AS Flows,\n    if($showHostnames, SamplerToString(SamplerAddress), IPv6ToString(SamplerAddress)) as Sampler\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY time, SamplerAddress\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.Sampler}",
+                  "unit": "pps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 46,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": ".*out"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.transform",
+                        "value": "negative-Y"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-13": {
+        "kind": "Panel",
+        "spec": {
+          "id": 13,
+          "title": "Top 100 Next Hop",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT time, NextHop, BitsPerSecond\nFROM\n(SELECT\n    $__timeInterval(TimeReceived) as time,\n    NextHop,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS BitsPerSecond,\n    row_number() over (partition by time order by BitsPerSecond DESC) as row_num\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND NextHop != toIPv6('::')\nGROUP BY time, NextHop\nORDER BY time) as subquery\nwhere row_num <= 100"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.NextHop}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 50,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": ".*out"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.transform",
+                        "value": "negative-Y"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-14": {
+        "kind": "Panel",
+        "spec": {
+          "id": 14,
+          "title": "Traffic per Ingress Interface",
+          "description": "The traffic based on the ingress interface. If you are using the portmirror, you'll see another interface with the ID 0. This is correct and is the sum of all outgoing traffic of the sampler",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    InterfaceToString(SamplerAddress, InIf) AS InIfName,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS BitsPerSecond,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY time, SamplerAddress, InIf, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.InIfName} ${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 50,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": ".*out"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.transform",
+                        "value": "negative-Y"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-15": {
+        "kind": "Panel",
+        "spec": {
+          "id": 15,
+          "title": "Traffic per Egress Interface",
+          "description": "The traffic based on the egress interface. If you are using the portmirror, you'll see another interface with the ID 0. This is correct and is the sum of all incoming traffic of the sampler",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    InterfaceToString(SamplerAddress, OutIf) AS OutIfName,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS BitsPerSecond,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY time, SamplerAddress, OutIf, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.OutIfName} ${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": ".*out"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.transform",
+                        "value": "negative-Y"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-17": {
+        "kind": "Panel",
+        "spec": {
+          "id": 17,
+          "title": "Top 100 Source ASN",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n  SrcAS,\n  dictGetString('autnums', 'name', toUInt64(SrcAS)) AS ASName,\n  dictGetString('autnums', 'country', toUInt64(SrcAS)) AS CO,\n  sum(Bytes * SamplingRate) as Bytes,\n  sum(Packets * SamplingRate) as Packets\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nGROUP BY SrcAS\nORDER BY Bytes DESC\nLIMIT 100"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bytes"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "gradient",
+                          "type": "gauge"
+                        }
+                      },
+                      {
+                        "id": "unit",
+                        "value": "bytes"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Packets"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "gradient",
+                          "type": "gauge"
+                        }
+                      },
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-18": {
+        "kind": "Panel",
+        "spec": {
+          "id": 18,
+          "title": "Top 100 Destination ASN",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n  DstAS,\n  dictGetString('autnums', 'name', toUInt64(DstAS)) AS ASName,\n  dictGetString('autnums', 'country', toUInt64(DstAS)) AS CO,\n  sum(Bytes * SamplingRate) as Bytes,\n  sum(Packets * SamplingRate) as Packets\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND NOT isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nGROUP BY DstAS\nORDER BY Bytes DESC\nLIMIT 100"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bytes"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "gradient",
+                          "type": "gauge"
+                        }
+                      },
+                      {
+                        "id": "unit",
+                        "value": "bytes"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Packets"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "gradient",
+                          "type": "gauge"
+                        }
+                      },
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-19": {
+        "kind": "Panel",
+        "spec": {
+          "id": 19,
+          "title": "Top 10 Source ASN",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    toString(SrcAS) as SrcASString,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS Value\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nAND SrcAS IN (\n    SELECT SrcAS\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n      AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n      AND isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\n    GROUP BY SrcAS\n    ORDER BY sum(Bytes) DESC\n    LIMIT 10)\nGROUP BY time, SrcAS\nORDER BY time, Value"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Disk Usage",
+          "description": "Does not include Kafka usage (which is capped by `goflowTopicRetention` config).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT sum(bytes_on_disk) FROM system.parts"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "purple"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-20": {
+        "kind": "Panel",
+        "spec": {
+          "id": 20,
+          "title": "Top 10 Destination ASN",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    toString(DstAS) as DstASString,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS Value\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND NOT isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nAND DstAS IN (\n    SELECT DstAS\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n    AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n    AND NOT isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\n    GROUP BY DstAS\n    ORDER BY sum(Bytes) DESC\n    LIMIT 10)\nGROUP BY time, DstAS\nORDER BY time, Value"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-22": {
+        "kind": "Panel",
+        "spec": {
+          "id": 22,
+          "title": "TCP Flags",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    arrayStringConcat(\n    arrayMap(\n    x -> dictGetString('TCPFlags', 'Name', toUInt64(x)), bitmaskToArray(TCPFlags))\n        , '-')\n    || ' (' || toString(TCPFlags) || ')' AS TCPFlagsName,\n\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS Value,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND Proto = 6\nGROUP BY time, TCPFlags, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.TCPFlagsName} ${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-23": {
+        "kind": "Panel",
+        "spec": {
+          "id": 23,
+          "title": "VLAN ID",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    VLANToString(SamplerAddress, VlanId) AS Vlan,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS Value,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND Proto = 6\nGROUP BY time, SamplerAddress, VlanId, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.Vlan} ${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-24": {
+        "kind": "Panel",
+        "spec": {
+          "id": 24,
+          "title": "Top 10 Source Ports",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    toString(SrcPort) AS SrcPortStr,\n    dictGetString('IPProtocols', 'Name', toUInt64(Proto)) AS ProtoName,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS Value,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\n  AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n  AND SrcPort IN (\n\t\t\t    SELECT SrcPort\n\t\t\t    FROM flows_raw\n\t\t\t    WHERE $__timeFilter(TimeReceived)\n\t\t\t    AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n\t\t\t    GROUP BY SrcPort\n\t\t\t    ORDER BY sum(Bytes * SamplingRate) DESC\n\t\t\t    LIMIT 10\n  )\nGROUP BY time, Proto, SrcPort, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.ProtoName}, ${__field.labels.SrcPortStr} ${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-25": {
+        "kind": "Panel",
+        "spec": {
+          "id": 25,
+          "title": "Top 10 Destination Ports",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    toString(DstPort) AS DstPortStr,\n    dictGetString('IPProtocols', 'Name', toUInt64(Proto)) AS ProtoName,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS Value,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE\n  $__timeFilter(TimeReceived)\n  AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n  AND DstPort IN (\n\t\t\t    SELECT DstPort\n\t\t\t    FROM flows_raw\n\t\t\t    WHERE $__timeFilter(TimeReceived)\n          AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n\t\t\t    GROUP BY DstPort\n\t\t\t    ORDER BY sum(Bytes * SamplingRate) DESC\n\t\t\t    LIMIT 10\n  )\nGROUP BY time, Proto, DstPort, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.ProtoName}, ${__field.labels.DstPortStr} ${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-27": {
+        "kind": "Panel",
+        "spec": {
+          "id": 27,
+          "title": "Top 10 Source IPs",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    if($showHostnames, HostToString(SamplerAddress, SrcAddr), IPv6ToString(SrcAddr)) AS Src,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS BitsPerSecond,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\n  AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\n  AND SrcAddr IN (\n\t\t\t    SELECT SrcAddr\n\t\t\t    FROM flows_raw\n\t\t\t    WHERE $__timeFilter(TimeReceived)\n          AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\n\t\t\t    GROUP BY SrcAddr\n\t\t\t    ORDER BY sum(Bytes * SamplingRate) DESC\n\t\t\t    LIMIT 10\n  )\nGROUP BY time, SamplerAddress, SrcAddr, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.Src}, ${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-28": {
+        "kind": "Panel",
+        "spec": {
+          "id": 28,
+          "title": "Top 10 Destination IPs",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    if($showHostnames, HostToString(SamplerAddress, DstAddr), IPv6ToString(DstAddr)) AS Dst,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS BitsPerSecond,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\n  AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\n  AND DstAddr IN (\n\t\t\t    SELECT DstAddr\n\t\t\t    FROM flows_raw\n\t\t\t    WHERE $__timeFilter(TimeReceived)\n\t\t\t    AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\n\t\t\t    GROUP BY DstAddr\n\t\t\t    ORDER BY sum(Bytes * SamplingRate) DESC\n\t\t\t    LIMIT 10\n  )\nGROUP BY time, SamplerAddress, DstAddr, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.Dst}, ${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-29": {
+        "kind": "Panel",
+        "spec": {
+          "id": 29,
+          "title": "Top 100 Source IPs",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    if($showHostnames, SamplerToString(SamplerAddress), IPv6ToString(SamplerAddress)) as Sampler,\n    if($showHostnames, HostToString(SamplerAddress, SrcAddr), IPv6ToString(SrcAddr)) AS Src,\n    sum(Bytes * SamplingRate) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND Proto = 6\nAND $__conditionalAll((DstAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY SamplerAddress, SrcAddr\nORDER BY Bytes DESC\nLIMIT 100"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bytes"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "gradient",
+                          "type": "gauge"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Total Flows Stored",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT count()\nFROM flows_raw"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "purple"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-30": {
+        "kind": "Panel",
+        "spec": {
+          "id": 30,
+          "title": "Top 100 Destination IPs",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    if($showHostnames, SamplerToString(SamplerAddress), IPv6ToString(SamplerAddress)) as Sampler,\n    if($showHostnames, HostToString(SamplerAddress, DstAddr), IPv6ToString(DstAddr)) AS Dst,\n    sum(Bytes * SamplingRate) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND Proto = 6\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY SamplerAddress, DstAddr\nORDER BY Bytes DESC\nLIMIT 100"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bytes"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "gradient",
+                          "type": "gauge"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-32": {
+        "kind": "Panel",
+        "spec": {
+          "id": 32,
+          "title": "Top 100 Flows",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "b315efc1-b699-4ba8-a3a2-d6c0e711c5fd"
+                      },
+                      "spec": {
+                        "builderOptions": "The query is not a select statement.",
+                        "format": 1,
+                        "meta": {
+                          "builderOptions": "The query is not a select statement."
+                        },
+                        "queryType": "sql",
+                        "rawSql": "SELECT\r\n  if(length(SamplerToString(SamplerAddress)) > 0, SamplerToString(SamplerAddress), IPv6ToString(SamplerAddress)) AS Sampler,\r\n    if(length(HostToString(SamplerAddress, SrcAddr)) > 0, HostToString(SamplerAddress, SrcAddr), IPv6ToString(SrcAddr)) AS Src,\r\n      if(length(HostToString(SamplerAddress, DstAddr)) > 0, HostToString(SamplerAddress, DstAddr), IPv6ToString(DstAddr)) AS Dst,\r\n        toString(SrcPort) AS SrcPortStr,\r\n          toString(DstPort) AS DstPortStr,\r\n            dictGetString('IPProtocols', 'Name', toUInt64(Proto)) AS ProtoName,\r\n              sum(Bytes * SamplingRate) AS TotalBytes,\r\n                sum(Bytes * SamplingRate) * 8 AS TotalBits\r\n                FROM flows_raw\r\n                WHERE\r\n                  $__timeFilter(TimeReceived)\r\n\r\n                    -- Conditional filtering\r\n                      AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\r\n                        AND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\r\n                          AND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\r\n                            AND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\r\n                              AND $__conditionalAll((SrcAS = toUInt32('$srcAS')), $srcAS)\r\n                                AND $__conditionalAll((DstAS = toUInt32('$dstAS')), $dstAS)\r\n                                  AND $__conditionalAll((IPv6CIDRMatch(SrcAddr, '$srcNet')), $srcNet)\r\n                                    AND $__conditionalAll((IPv6CIDRMatch(DstAddr, '$dstNet')), $dstNet)\r\n                                      AND $__conditionalAll(((IPv6CIDRMatch(SrcAddr, '$hostNet') OR IPv6CIDRMatch(DstAddr, '$hostNet'))), $hostNet)\r\n                                        AND $__conditionalAll(((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP'))), $hostIP)\r\n                                          AND $__conditionalAll(($extra), $extra)\r\n\r\n                                          GROUP BY\r\n                                            SamplerAddress, SrcAddr, DstAddr, SrcPort, DstPort, Proto\r\n                                            ORDER BY\r\n                                              TotalBytes DESC\r\n                                              LIMIT 100\r\n                                              "
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "12.2.0",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bytes"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "gradient",
+                          "type": "gauge"
+                        }
+                      },
+                      {
+                        "id": "unit",
+                        "value": "bytes"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-34": {
+        "kind": "Panel",
+        "spec": {
+          "id": 34,
+          "title": "IP TTL",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "select time,\n       Keys,\n       Values\nfrom (WITH ([toUInt8(0)], [toUInt64(0)]) AS emptyTuple\n      select time,\n             arrayMax(groupArray(Count))                                                       as Max,\n             mapAdd((groupArray(Value), groupArray(Count)), emptyTuple)                        as Data,\n             tupleElement(Data, 1)                                                             as Keys,\n             arrayMap((v) -> toUInt8(v / Max * 128), tupleElement(Data, 2))                    as Values\n      from (SELECT DISTINCT $__timeInterval(TimeReceived) as time,\n                            toUInt8(IPTTL)                                                  as Value,\n                            toUInt64(count())                                               as Count\n            from flows_raw\n            WHERE $__timeFilter(TimeReceived)\n            AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n            GROUP BY time, IPTTL\n            ORDER BY time, IPTTL\n          )\n      group by time\n      order by time) ARRAY JOIN Keys, Values;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "heatmap",
+            "version": "12.2.0",
+            "spec": {
+              "options": {
+                "calculate": true,
+                "calculation": {
+                  "xBuckets": {
+                    "mode": "count",
+                    "value": 150
+                  },
+                  "yBuckets": {
+                    "mode": "size",
+                    "value": 1
+                  }
+                },
+                "cellGap": 1,
+                "color": {
+                  "exponent": 0.5,
+                  "fill": "dark-orange",
+                  "max": 128,
+                  "mode": "scheme",
+                  "reverse": false,
+                  "scale": "exponential",
+                  "scheme": "Turbo",
+                  "steps": 128
+                },
+                "exemplars": {
+                  "color": "rgba(255,0,255,0.7)"
+                },
+                "filterValues": {
+                  "le": "1e-9"
+                },
+                "legend": {
+                  "show": false
+                },
+                "rowsFrame": {
+                  "layout": "auto"
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "showColorScale": false,
+                  "yHistogram": false
+                },
+                "yAxis": {
+                  "axisPlacement": "left",
+                  "max": 255,
+                  "min": 0,
+                  "reverse": false,
+                  "unit": "short"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "scaleDistribution": {
+                      "type": "linear"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-35": {
+        "kind": "Panel",
+        "spec": {
+          "id": 35,
+          "title": "Packet Size (Bytes)",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "select time,\n       Keys,\n       Values\nfrom (WITH ([toUInt32(0)], [toUInt64(0)]) AS emptyTuple\n      select time,\n             arrayMax(groupArray(Count))                                                       as Max,\n             mapAdd((groupArray(Value), groupArray(Count)), emptyTuple)                        as Data,\n             tupleElement(Data, 1)                                                             as Keys,\n             arrayMap((v) -> toUInt8(v / Max * 128), tupleElement(Data, 2))                    as Values\n      from (SELECT DISTINCT $__timeInterval(TimeReceived) as time,\n                            toUInt32(Bytes)                                                 as Value,\n                            toUInt64(count())                                               as Count\n            from flows_raw\n            WHERE $__timeFilter(TimeReceived)\n            AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n            GROUP BY time, Bytes\n            ORDER BY time, Bytes\n          )\n      group by time\n      order by time) ARRAY JOIN Keys, Values;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "heatmap",
+            "version": "12.2.0",
+            "spec": {
+              "options": {
+                "calculate": true,
+                "calculation": {
+                  "xBuckets": {
+                    "mode": "count",
+                    "value": 150
+                  },
+                  "yBuckets": {
+                    "mode": "size",
+                    "value": 10
+                  }
+                },
+                "cellGap": 1,
+                "color": {
+                  "exponent": 0.5,
+                  "fill": "dark-orange",
+                  "max": 128,
+                  "mode": "scheme",
+                  "reverse": false,
+                  "scale": "exponential",
+                  "scheme": "Turbo",
+                  "steps": 128
+                },
+                "exemplars": {
+                  "color": "rgba(255,0,255,0.7)"
+                },
+                "filterValues": {
+                  "le": "1e-9"
+                },
+                "legend": {
+                  "show": false
+                },
+                "rowsFrame": {
+                  "layout": "auto"
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "showColorScale": false,
+                  "yHistogram": false
+                },
+                "yAxis": {
+                  "axisPlacement": "left",
+                  "max": 1500,
+                  "min": 0,
+                  "reverse": false,
+                  "unit": "bytes"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "scaleDistribution": {
+                      "type": "linear"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-36": {
+        "kind": "Panel",
+        "spec": {
+          "id": 36,
+          "title": "Source Port",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "select time,\n       Keys,\n       Values\nfrom (WITH ([toUInt16(0)], [toUInt64(0)]) AS emptyTuple\n      select time,\n             arrayMax(groupArray(Count))                                                       as Max,\n             mapAdd((groupArray(Value), groupArray(Count)), emptyTuple)                        as Data,\n             tupleElement(Data, 1)                                                             as Keys,\n             arrayMap((v) -> toUInt8(v / Max * 128), tupleElement(Data, 2))                    as Values\n      from (SELECT DISTINCT $__timeInterval(TimeReceived) as time,\n                            toUInt16(SrcPort)                                               as Value,\n                            toUInt64(count())                                               as Count\n            from flows_raw\n            WHERE $__timeFilter(TimeReceived)\n            AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n            GROUP BY time, SrcPort\n            ORDER BY time, SrcPort\n          )\n      group by time\n      order by time) ARRAY JOIN Keys, Values;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "heatmap",
+            "version": "10.4.2",
+            "spec": {
+              "options": {
+                "calculate": true,
+                "calculation": {
+                  "xBuckets": {
+                    "mode": "count",
+                    "value": 150
+                  },
+                  "yBuckets": {
+                    "mode": "size",
+                    "value": 1000
+                  }
+                },
+                "cellGap": 1,
+                "color": {
+                  "exponent": 0.5,
+                  "fill": "dark-orange",
+                  "max": 128,
+                  "mode": "scheme",
+                  "reverse": false,
+                  "scale": "exponential",
+                  "scheme": "Turbo",
+                  "steps": 128
+                },
+                "exemplars": {
+                  "color": "rgba(255,0,255,0.7)"
+                },
+                "filterValues": {
+                  "le": "1e-9"
+                },
+                "legend": {
+                  "show": false
+                },
+                "rowsFrame": {
+                  "layout": "auto"
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "showColorScale": false,
+                  "yHistogram": false
+                },
+                "yAxis": {
+                  "axisPlacement": "left",
+                  "max": 65535,
+                  "min": 0,
+                  "reverse": false,
+                  "unit": "short"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "scaleDistribution": {
+                      "type": "linear"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-37": {
+        "kind": "Panel",
+        "spec": {
+          "id": 37,
+          "title": "Destination Port",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "select time,\n       Keys,\n       Values\nfrom (WITH ([toUInt16(0)], [toUInt64(0)]) AS emptyTuple\n      select time,\n             arrayMax(groupArray(Count))                                                       as Max,\n             mapAdd((groupArray(Value), groupArray(Count)), emptyTuple)                        as Data,\n             tupleElement(Data, 1)                                                             as Keys,\n             arrayMap((v) -> toUInt8(v / Max * 128), tupleElement(Data, 2))                    as Values\n      from (SELECT DISTINCT $__timeInterval(TimeReceived) as time,\n                            toUInt16(DstPort)                                               as Value,\n                            toUInt64(count())                                               as Count\n            from flows_raw\n            WHERE $__timeFilter(TimeReceived)\n            AND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\n            GROUP BY time, DstPort\n            ORDER BY time, DstPort\n          )\n      group by time\n      order by time) ARRAY JOIN Keys, Values;"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "heatmap",
+            "version": "10.4.2",
+            "spec": {
+              "options": {
+                "calculate": true,
+                "calculation": {
+                  "xBuckets": {
+                    "mode": "count",
+                    "value": 150
+                  },
+                  "yBuckets": {
+                    "mode": "size",
+                    "value": 1000
+                  }
+                },
+                "cellGap": 1,
+                "color": {
+                  "exponent": 0.5,
+                  "fill": "dark-orange",
+                  "max": 128,
+                  "mode": "scheme",
+                  "reverse": false,
+                  "scale": "exponential",
+                  "scheme": "Turbo",
+                  "steps": 128
+                },
+                "exemplars": {
+                  "color": "rgba(255,0,255,0.7)"
+                },
+                "filterValues": {
+                  "le": "1e-9"
+                },
+                "legend": {
+                  "show": false
+                },
+                "rowsFrame": {
+                  "layout": "auto"
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "showColorScale": false,
+                  "yHistogram": false
+                },
+                "yAxis": {
+                  "axisPlacement": "left",
+                  "max": 65535,
+                  "min": 0,
+                  "reverse": false,
+                  "unit": "short"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "scaleDistribution": {
+                      "type": "linear"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-38": {
+        "kind": "Panel",
+        "spec": {
+          "id": 38,
+          "title": "New panel",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "annolist",
+            "version": "12.3.1",
+            "spec": {
+              "options": {
+                "limit": 10,
+                "navigateAfter": "10m",
+                "navigateBefore": "10m",
+                "navigateToPanel": true,
+                "onlyFromThisDashboard": false,
+                "onlyInTimeRange": false,
+                "showTags": true,
+                "showTime": true,
+                "showUser": true
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "Effective Retention",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "select (toUnixTimestamp(now()) - TimeReceived) from flows_raw ORDER BY TimeReceived limit 1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "dtdurations",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "purple"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "TTL Active",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT if(min(delete_ttl_info_min) == 0, 'No', 'Yes')\nFROM system.parts\nWHERE (database = 'default') AND (table = 'flows_raw')"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "/.*/",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "purple"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "TTL next deletion",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT min(delete_ttl_info_min)\nFROM system.parts\nWHERE (database = 'default') AND (table = 'flows_raw')"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "/.*/",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "purple"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Packets",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    (sum(Packets * SamplingRate) / $__interval_s) AS Value,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY time, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.FlowDirectionStr}",
+                  "unit": "pps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 75,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": ".*out"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.transform",
+                        "value": "negative-Y"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "Throughput",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-clickhouse-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${datasource}"
+                      },
+                      "spec": {
+                        "format": 0,
+                        "queryType": "sql",
+                        "rawSql": "SELECT\n    $__timeInterval(TimeReceived) as time,\n    (sum(Bytes * SamplingRate) * 8 / $__interval_s) AS Value,\n    if(isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection), 'in', 'out') AS FlowDirectionStr\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY time, FlowDirectionStr\nORDER BY time"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.2",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "maxHeight": 600,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.FlowDirectionStr}",
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic",
+                    "fixedColor": "green"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 75,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": ".*out"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.transform",
+                        "value": "negative-Y"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "RowsLayout",
+      "spec": {
+        "rows": [
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "",
+              "collapse": false,
+              "hideHeader": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 5,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-1"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 5,
+                        "y": 0,
+                        "width": 5,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-2"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 10,
+                        "y": 0,
+                        "width": 5,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-5"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 3,
+                        "width": 5,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-3"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 5,
+                        "y": 3,
+                        "width": 5,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-4"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 10,
+                        "y": 3,
+                        "width": 5,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-6"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Traffic Statistics",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-8"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-9"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-10"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-13"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 24,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-12"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 24,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-15"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 36,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-14"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Origin AS Stats",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-17"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-18"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-19"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-20"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Traffic Details (expensive)",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-22"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-23"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-24"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-25"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Top Hosts (expensive)",
+              "collapse": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-27"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-28"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-29"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-30"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Top Flows (expensive)",
+              "collapse": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-32"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Heatmaps (may induce spontaneous browser combustion)",
+              "collapse": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-34"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 13,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-38"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-35"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-36"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 12,
+                        "width": 12,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-37"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [
+      {
+        "title": "NetMeta Dashboards",
+        "type": "dashboards",
+        "icon": "external link",
+        "tooltip": "",
+        "url": "",
+        "tags": [
+          "netmeta",
+          "Network"
+        ],
+        "asDropdown": true,
+        "targetBlank": false,
+        "includeVars": true,
+        "keepTime": true
+      },
+      {
+        "title": "Network Dashboards",
+        "type": "dashboards",
+        "icon": "external link",
+        "tooltip": "",
+        "url": "",
+        "tags": [
+          "Network"
+        ],
+        "asDropdown": true,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true
+      }
+    ],
+    "liveNow": false,
+    "preload": false,
+    "tags": [
+      "netmeta",
+      "Network"
+    ],
+    "timeSettings": {
+      "timezone": "utc",
+      "from": "now-6h",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Sflow Overview",
+    "variables": [
+      {
+        "kind": "DatasourceVariable",
+        "spec": {
+          "name": "datasource",
+          "pluginId": "grafana-clickhouse-datasource",
+          "refresh": "onDashboardLoad",
+          "regex": "",
+          "current": {
+            "text": "grafana-clickhouse-datasource",
+            "value": "b315efc1-b699-4ba8-a3a2-d6c0e711c5fd"
+          },
+          "options": [],
+          "multi": false,
+          "includeAll": false,
+          "label": "Datasource",
+          "hide": "dontHide",
+          "skipUrlSync": false,
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "ConstantVariable",
+        "spec": {
+          "name": "clickhouse_adhoc_query",
+          "query": "default.flows_raw",
+          "current": {
+            "text": "default.flows_raw",
+            "value": "default.flows_raw"
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": true
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "sampler",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "label": "Sampler",
+          "hide": "dontHide",
+          "refresh": "onTimeRangeChanged",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana-clickhouse-datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "${datasource}"
+            },
+            "spec": {
+              "__legacyStringValue": "SELECT\n    toString(SamplerAddress),\n\t\tSamplerToString(SamplerAddress)\nFROM (\n    SELECT \n        DISTINCT SamplerAddress \n    FROM flows_raw \n    WHERE $__timeFilter(TimeReceived)\n)"
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "disabled",
+          "definition": "SELECT\n    toString(SamplerAddress),\n\t\tSamplerToString(SamplerAddress)\nFROM (\n    SELECT \n        DISTINCT SamplerAddress \n    FROM flows_raw \n    WHERE $__timeFilter(TimeReceived)\n)",
+          "options": [],
+          "multi": false,
+          "includeAll": true,
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "interface",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "label": "Interface",
+          "hide": "dontHide",
+          "refresh": "onTimeRangeChanged",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana-clickhouse-datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "${datasource}"
+            },
+            "spec": {
+              "__legacyStringValue": "SELECT\n    (toString(SamplerAddress) || '-' || toString(InIf)),\n    InterfaceToString(SamplerAddress, InIf)\nFROM (\n    SELECT DISTINCT SamplerAddress,\n                    InIf\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)\nUNION ALL\nSELECT\n    (toString(SamplerAddress) || '-' || toString(OutIf)),\n    InterfaceToString(SamplerAddress, OutIf)\nFROM (\n    SELECT DISTINCT SamplerAddress,\n                    OutIf\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)"
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "disabled",
+          "definition": "SELECT\n    (toString(SamplerAddress) || '-' || toString(InIf)),\n    InterfaceToString(SamplerAddress, InIf)\nFROM (\n    SELECT DISTINCT SamplerAddress,\n                    InIf\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)\nUNION ALL\nSELECT\n    (toString(SamplerAddress) || '-' || toString(OutIf)),\n    InterfaceToString(SamplerAddress, OutIf)\nFROM (\n    SELECT DISTINCT SamplerAddress,\n                    OutIf\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)",
+          "options": [],
+          "multi": false,
+          "includeAll": true,
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "showHostnames",
+          "query": "show : true,hide : false",
+          "current": {
+            "text": "false",
+            "value": "false"
+          },
+          "options": [
+            {
+              "selected": false,
+              "text": "show",
+              "value": "true"
+            },
+            {
+              "selected": true,
+              "text": "hide",
+              "value": "false"
+            }
+          ],
+          "multi": false,
+          "includeAll": false,
+          "label": "Show Hostnames",
+          "hide": "dontHide",
+          "skipUrlSync": false,
+          "allowCustomValue": false,
+          "valuesFormat": "csv"
+        }
+      },
+      {
+        "kind": "AdhocVariable",
+        "group": "grafana-clickhouse-datasource",
+        "datasource": {
+          "name": "${datasource}"
+        },
+        "spec": {
+          "name": "ad_hoc_query",
+          "baseFilters": [],
+          "filters": [],
+          "defaultKeys": [],
+          "label": "Custom Filters",
+          "hide": "dontHide",
+          "skipUrlSync": false,
+          "allowCustomValue": true,
+          "enableGroupBy": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "srcIP",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Src IP",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "dstIP",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Dst IP",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "hostIP",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Src/Dst IP",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "srcNet",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Src Subnet",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "dstNet",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Dst Subnet",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "hostNet",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Src/Dst Subnet",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "nextHop",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Next Hop IP",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "srcAS",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Src AS",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "dstAS",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Dst AS",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "extra",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Custom SQL",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      }
+    ]
+  }
+}

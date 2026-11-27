@@ -1,0 +1,106 @@
+From 6d876e488124d7f0f6d660164c112a1a5d375218 Mon Sep 17 00:00:00 2001
+From: Tim Windelschmidt <tim@monogon.tech>
+Date: Wed, 17 Jul 2024 18:27:41 +0200
+Subject: [PATCH] Add support for prepatching
+
+---
+ internal/bzlmod/go_deps.bzl | 13 +++++++++++++
+ internal/go_repository.bzl  | 10 +++++++++-
+ 2 files changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/internal/bzlmod/go_deps.bzl b/internal/bzlmod/go_deps.bzl
+index dcd0db3..7170506 100644
+--- a/internal/bzlmod/go_deps.bzl
++++ b/internal/bzlmod/go_deps.bzl
+@@ -159,6 +159,9 @@ def _get_build_extra_args(path, gazelle_overrides, gazelle_default_attributes):
+ def _get_patches(path, module_overrides):
+     return _get_override_or_default(module_overrides, struct(), {}, path, [], "patches")
+
++def _get_pre_patches(path, module_overrides):
++    return _get_override_or_default(module_overrides, struct(), {}, path, [], "pre_patches")
++
+ def _get_patch_args(path, module_overrides):
+     override = _get_override_or_default(module_overrides, struct(), {}, path, None, "patch_strip")
+     return ["-p{}".format(override)] if override else []
+@@ -235,6 +238,7 @@ def _process_gazelle_override(gazelle_override_tag):
+ def _process_module_override(module_override_tag):
+     return struct(
+         patches = module_override_tag.patches,
++        pre_patches = module_override_tag.pre_patches,
+         patch_strip = module_override_tag.patch_strip,
+     )
+
+@@ -243,6 +247,7 @@ def _process_archive_override(archive_override_tag):
+         urls = archive_override_tag.urls,
+         sha256 = archive_override_tag.sha256,
+         strip_prefix = archive_override_tag.strip_prefix,
++        pre_patches = archive_override_tag.pre_patches,
+         patches = archive_override_tag.patches,
+         patch_strip = archive_override_tag.patch_strip,
+     )
+@@ -611,6 +616,7 @@ def _go_deps_impl(module_ctx):
+             "build_directives": _get_directives(path, gazelle_overrides, gazelle_default_attributes),
+             "build_file_generation": _get_build_file_generation(path, gazelle_overrides, gazelle_default_attributes),
+             "build_extra_args": _get_build_extra_args(path, gazelle_overrides, gazelle_default_attributes),
++            "pre_patches": _get_pre_patches(path, module_overrides),
+             "patches": _get_patches(path, module_overrides),
+             "patch_args": _get_patch_args(path, module_overrides),
+             "debug_mode": debug_mode,
+@@ -622,6 +628,7 @@ def _go_deps_impl(module_ctx):
+                 "urls": archive_override.urls,
+                 "strip_prefix": archive_override.strip_prefix,
+                 "sha256": archive_override.sha256,
++                "pre_patches": _get_pre_patches(path, archive_overrides),
+                 "patches": _get_patches(path, archive_overrides),
+                 "patch_args": _get_patch_args(path, archive_overrides),
+             })
+@@ -775,6 +782,9 @@ _archive_override_tag = tag_class(
+             SHA-256 sum of the downloaded archive. When set, Bazel will verify the archive
+             against this sum before extracting it.""",
+         ),
++        "pre_patches": attr.label_list(
++            doc = "A list of patches to apply to the repository before gazelle runs.",
++        ),
+         "patches": attr.label_list(
+             doc = "A list of patches to apply to the repository *after* gazelle runs.",
+         ),
+@@ -813,6 +823,9 @@ _module_override_tag = tag_class(
+             extension within this Bazel module.""",
+             mandatory = True,
+         ),
++        "pre_patches": attr.label_list(
++            doc = "A list of patches to apply to the repository before gazelle runs.",
++        ),
+         "patches": attr.label_list(
+             doc = "A list of patches to apply to the repository *after* gazelle runs.",
+         ),
+diff --git a/internal/go_repository.bzl b/internal/go_repository.bzl
+index 48a9d14..e3efa5b 100644
+--- a/internal/go_repository.bzl
++++ b/internal/go_repository.bzl
+@@ -286,6 +286,11 @@ def _go_repository_impl(ctx):
+     if result.return_code:
+         fail("%s: %s" % (ctx.name, result.stderr))
+
++    # TODO(lorenz): Replace this with patch() once the patches argument no longer gets merged with
++    # the attribute pulled from ctx.
++    for p in ctx.attr.pre_patches:
++        ctx.patch(p, 1)
++
+     # Repositories are fetched. Determine if build file generation is needed.
+     build_file_names = ctx.attr.build_file_name.split(",")
+     existing_build_file = ""
+@@ -623,7 +628,10 @@ go_repository = repository_rule(
+             prefixed with `#` automatically. A common use case is to pass a list of
+             Gazelle directives.""",
+         ),
+-
++        # Patches to apply before running gazelle.
++        "pre_patches": attr.label_list(
++            doc = "A list of patches to apply to the repository before gazelle runs.",
++        ),
+         # Patches to apply after running gazelle.
+         "patches": attr.label_list(
+             doc = "A list of patches to apply to the repository after gazelle runs.",
+--
+2.44.1

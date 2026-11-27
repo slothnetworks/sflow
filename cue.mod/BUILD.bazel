@@ -1,0 +1,5 @@
+filegroup(
+    name = "cue.mod",
+    srcs = glob(["**/*.cue"]),
+    visibility = ["//deploy:__pkg__"],
+)

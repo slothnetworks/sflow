@@ -1,0 +1,48 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+go_library(
+    name = "reconciler_lib",
+    srcs = [
+        "config.go",
+        "main.go",
+        "placeholder.s",
+        "quote.go",
+        "reconciler.go",
+        "visitor.go",
+    ],
+    importpath = "github.com/monogon-dev/netmeta/cmd/reconciler",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_clickhouse_clickhouse_go_v2//:clickhouse-go",
+        "@com_github_emicklei_proto//:proto",
+        "@com_github_huandu_go_sqlbuilder//:go-sqlbuilder",
+    ],
+)
+
+go_binary(
+    name = "reconciler",
+    embed = [":reconciler_lib"],
+    visibility = ["//visibility:public"],
+)
+
+pkg_tar(
+    name = "reconciler_tar",
+    srcs = [":reconciler"],
+)
+
+oci_image(
+    name = "reconciler_image",
+    base = "@distroless_base",
+    entrypoint = ["/reconciler"],
+    tars = [":reconciler_tar"],
+    visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "reconciler_load",
+    image = ":reconciler_image",
+    repo_tags = ["github.com/monogon-dev/netmeta/reconciler:latest"],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,41 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+go_library(
+    name = "risinfo_lib",
+    srcs = ["risinfo.go"],
+    importpath = "github.com/monogon-dev/netmeta/cmd/risinfo",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_osrg_gobgp//pkg/packet/bgp",
+        "@com_github_osrg_gobgp//pkg/packet/mrt",
+        "@io_k8s_klog_v2//:klog",
+    ],
+)
+
+go_binary(
+    name = "risinfo",
+    embed = [":risinfo_lib"],
+    visibility = ["//visibility:public"],
+)
+
+pkg_tar(
+    name = "risinfo_tar",
+    srcs = [":risinfo"],
+)
+
+oci_image(
+    name = "risinfo_image",
+    base = "@distroless_base",
+    entrypoint = ["/risinfo"],
+    tars = [":risinfo_tar"],
+    visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "risinfo_load",
+    image = ":risinfo_image",
+    repo_tags = ["github.com/monogon-dev/netmeta/risinfo:latest"],
+    visibility = ["//visibility:public"],
+)

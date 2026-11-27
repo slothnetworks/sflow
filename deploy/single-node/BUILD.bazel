@@ -1,0 +1,45 @@
+load("//build/cue:def.bzl", "cue_export")
+load("//build/cue/local-images:def.bzl", "cue_local_images")
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**/*"]),
+    path = "",
+    visibility = ["//deploy:__pkg__"],
+)
+
+cue_local_images(
+    name = "local_images",
+    images = {
+        "risinfo": "//cmd/risinfo:risinfo_load",
+        "goflow": "//third_party/goflow:goflow_load",
+        "portmirror": "//cmd/portmirror:portmirror_load",
+        "reconciler": "//cmd/reconciler:reconciler_load",
+        "grafana": "//third_party/grafana:grafana_load",
+    },
+)
+
+# To allow short name
+alias(
+    name = "single-node",
+    actual = ":manifests",
+)
+
+cue_export(
+    name = "manifests",
+    srcs = [
+        ":local_images",
+        "//deploy:all_files",
+    ],
+    out = "text",
+    args = [
+        "./deploy/single-node:k8s",
+        "$(location :local_images)",
+    ],
+    expression = "all_objects_yaml",
+    outfile = "netmeta.yaml",
+)
+
+# TODO: add generator for initial config_local
+# TODO: clean up go.mod and deps.go
+# TODO: add nix flake?
