@@ -1,3 +1,0 @@
-load(":defs.bzl", "grafana_image")
-
-grafana_image()

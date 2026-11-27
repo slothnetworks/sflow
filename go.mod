@@ -74,6 +74,7 @@ require (
 	github.com/ncruces/go-strftime v1.1.0 // indirect
 	github.com/opencontainers/go-digest v1.0.1-0.20261015205711-63db54280247 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
+	github.com/osrg/gobgp/v3 v3.37.0 // indirect
 	github.com/paulmach/orb v0.14.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.33 // indirect
