@@ -10,7 +10,7 @@
       <clickhouse>
         <user>admin</user>
         <password from_env="CLICKHOUSE_PASSWORD"/>
-        <query>SELECT * FROM dictionaries.risinfo_autnums 
+        <query>SELECT asn AS asnum, name, country FROM geo.asn_names
 UNION ALL
 SELECT * FROM dictionaries.user_autnums</query>
       </clickhouse>

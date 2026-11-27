@@ -1,5 +1,18 @@
+# Local configuration and secrets
+.env
+*.local
+compose.override.yaml
+docker-compose.override.yml
+
+# Editors and OS
 .idea
-*_local.cue
-deploy/single-node/out
-.ijwb
-bazel-*
+.vscode
+*.swp
+.DS_Store
+
+# Build output
+/bin/
+/dist/
+*.test
+coverage.out
+.backfill-state

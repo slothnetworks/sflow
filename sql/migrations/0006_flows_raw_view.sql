@@ -7,6 +7,9 @@
 -- `Etype` never matched the flows_raw column `EType` and EType was always 0.
 --
 -- Depends on the UDF ParseGoFlowAddress (sql/functions); cmd/migrate creates functions first.
+-- ClickHouse expands SQL UDFs when the view is created, so a later change to ParseGoFlowAddress
+-- does not reach this view: it needs a new migration that drops and re-creates the view.
+-- Nothing in the SELECT may throw: an exception stops the Kafka consumer on that message.
 
 -- +goose Up
 CREATE MATERIALIZED VIEW IF NOT EXISTS flows_raw_view TO flows_raw AS
@@ -54,13 +57,16 @@ SELECT
     fragment_id                                                                    AS FragmentId,
     fragment_offset                                                                AS FragmentOffset,
     toUInt8(bi_flow_direction)                                                     AS BiFlowDirection,
-    -- AS lookups use the unanonymised address
-    if(src_as = 0, dictGetOrDefault('risinfo', 'asnum', src, toUInt32(0)), src_as) AS SrcAS,
-    if(dst_as = 0, dictGetOrDefault('risinfo', 'asnum', dst, toUInt32(0)), dst_as) AS DstAS,
+    -- ASN/country lookups use the unanonymised address. The geo_* dictionaries are empty
+    -- unless the optional geoip loader is configured, so these default to 0 / ''.
+    if(src_as = 0, dictGetOrDefault('geo_asn', 'asn', tuple(src), toUInt32(0)), src_as) AS SrcAS,
+    if(dst_as = 0, dictGetOrDefault('geo_asn', 'asn', tuple(dst), toUInt32(0)), dst_as) AS DstAS,
     if(length(next_hop) = 0, toIPv6('::'), ParseGoFlowAddress(next_hop))           AS NextHop,
     next_hop_as                                                                    AS NextHopAS,
     toUInt8(src_net)                                                               AS SrcNet,
-    toUInt8(dst_net)                                                               AS DstNet
+    toUInt8(dst_net)                                                               AS DstNet,
+    dictGetOrDefault('geo_country', 'country', tuple(src), '')                     AS SrcCountry,
+    dictGetOrDefault('geo_country', 'country', tuple(dst), '')                     AS DstCountry
 FROM flows_queue
 WHERE length(_error) = 0;
 

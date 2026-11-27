@@ -1,0 +1,37 @@
+<!-- Optional country enrichment: longest-prefix match on geo.country, which the geoip loader fills.
+     Empty (every lookup returns the default) unless GEOIP_PROVIDERS is set. -->
+<clickhouse>
+  <dictionary>
+    <name>geo_country</name>
+    <source>
+      <clickhouse>
+        <user>admin</user>
+        <password from_env="CLICKHOUSE_PASSWORD"/>
+        <db>geo</db>
+        <table>country</table>
+      </clickhouse>
+    </source>
+    <layout>
+      <ip_trie>
+        <access_to_key_from_attributes>true</access_to_key_from_attributes>
+      </ip_trie>
+    </layout>
+    <structure>
+      <key>
+        <attribute>
+          <name>network</name>
+          <type>String</type>
+        </attribute>
+      </key>
+      <attribute>
+        <name>country</name>
+        <type>String</type>
+        <null_value/>
+      </attribute>
+    </structure>
+    <lifetime>
+      <min>300</min>
+      <max>600</max>
+    </lifetime>
+  </dictionary>
+</clickhouse>

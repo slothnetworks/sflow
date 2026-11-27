@@ -217,6 +217,11 @@ func run(ctx context.Context) error {
 	if err := migrate(ctx, db); err != nil {
 		return err
 	}
+	// Dictionaries that read the geo tables fail to load until those tables exist; reload them
+	// now instead of waiting for their lifetime to expire. A failure here is not fatal.
+	if _, err := db.ExecContext(ctx, "SYSTEM RELOAD DICTIONARIES"); err != nil {
+		slog.Warn("reloading dictionaries", "err", err)
+	}
 	return syncTTL(ctx, db, c.retentionDays)
 }
 

@@ -1,0 +1,19 @@
+# Optional TLS for Grafana (compose profile `tls`). Environment, set by compose.yaml:
+#   CADDY_TLS           "internal" (Caddy's local CA, self-signed) or the ACME e-mail address
+#   PUBLIC_HOSTNAME     name in the certificate
+#   GRAFANA_HTTPS_PORT  listening port
+# Let's Encrypt (TLS_MODE=acme) can only validate when Caddy is reachable on public :80 or :443.
+{
+	# Clients that connect by IP address (no SNI) get the PUBLIC_HOSTNAME certificate.
+	default_sni {$PUBLIC_HOSTNAME}
+	# Caddy's own port 80 redirect listener is not used.
+	auto_https disable_redirects
+}
+
+# The catch-all address also serves clients that use an IP address or another name; they get
+# the PUBLIC_HOSTNAME certificate (default_sni) and a certificate warning, as before.
+{$PUBLIC_HOSTNAME}:{$GRAFANA_HTTPS_PORT}, :{$GRAFANA_HTTPS_PORT} {
+	tls {$CADDY_TLS}
+	encode zstd gzip
+	reverse_proxy grafana:3000
+}

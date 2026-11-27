@@ -1,0 +1,16 @@
+# Only Go sources are needed to build the images.
+.git
+.github
+.env
+*.local
+bin
+dist
+config
+deploy
+doc
+test
+build
+third_party
+cue.mod
+**/*.md
+grafana-dash.json

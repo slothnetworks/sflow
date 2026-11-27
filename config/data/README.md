@@ -11,7 +11,7 @@ Sampler and device addresses are IPv6 strings. IPv4 samplers use the mapped form
 | `interface_names.tsv` | `Device`, `Index`, `Description` | `InterfaceToString` |
 | `vlan_names.tsv` | `Device`, `Index` (VLAN id), `Description` | `VLANToString` |
 | `host_names.tsv` | `Sampler`, `Device` (host address), `Description` | `HostToString` |
-| `own_asns.tsv` | `asnum`, `name`, `country` | `ASNToString`, merged with the public AS names from risinfo |
+| `own_asns.tsv` | `asnum`, `name`, `country` | `ASNToString`, merged with the public AS names from the optional geoip loader (`geo.asn_names`) |
 
 Example `samplers.tsv` line:
 

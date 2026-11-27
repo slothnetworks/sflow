@@ -1,0 +1,255 @@
+# NetMeta: goflow2 -> Kafka -> ClickHouse -> Grafana on a single host.
+#
+#   cp .env.example .env   # set the passwords
+#   docker compose up -d
+#
+# Ports (defaults from .env.example):
+#   2055, 2056/udp NetFlow v5/v9/IPFIX, 6343/udp sFlow   goflow2 (host network)
+#   15001 Grafana (HTTP), 15002 Grafana (HTTPS, `tls` profile), 15003 ClickHouse HTTP
+name: netmeta
+
+x-netmeta-build: &netmeta-build
+  context: .
+  dockerfile: Dockerfile
+
+services:
+  kafka:
+    image: apache/kafka:4.4.0
+    restart: unless-stopped
+    environment:
+      CLUSTER_ID: TmV0TWV0YUthZmthMDAwMQ  # any 16 bytes, base64url without padding
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # DOCKER: other containers, as kafka:9092.
+      # HOST:   goflow2 on the host network, through 127.0.0.1:9092 -> container port 9094.
+      KAFKA_LISTENERS: DOCKER://:9092,HOST://:9094,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: DOCKER://kafka:9092,HOST://127.0.0.1:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER:PLAINTEXT,HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR: 1
+      KAFKA_LOG_RETENTION_BYTES: ${KAFKA_RETENTION_BYTES:-1000000000}
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 104857600
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
+    ports:
+      - "127.0.0.1:9092:9094"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    # Healthy once the broker answers and the flow topic exists (created here, so the
+    # ClickHouse consumer never subscribes to a missing topic and waits for a metadata refresh).
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic flow-messages --partitions 1 --replication-factor 1 >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 20s
+      start_period: 60s
+      start_interval: 5s
+      retries: 10
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8.33.6
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-admin}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:?set CLICKHOUSE_PASSWORD in .env}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+      # The config mounts are read-only; the data volume already belongs to the clickhouse user.
+      CLICKHOUSE_DO_NOT_CHOWN: 1
+      # Read by users.d/netmeta.xml (grafana user) and the dictionary sources (admin).
+      CLICKHOUSE_GRAFANA_PASSWORD: ${CLICKHOUSE_GRAFANA_PASSWORD:?set CLICKHOUSE_GRAFANA_PASSWORD in .env}
+    ports:
+      # Plain HTTP on all interfaces, as on the old deployment. Native 9000 stays internal.
+      - "${CLICKHOUSE_HTTP_PORT:-15003}:8123"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./config/clickhouse/config.d/netmeta.xml:/etc/clickhouse-server/config.d/netmeta.xml:ro
+      - ./config/clickhouse/users.d/netmeta.xml:/etc/clickhouse-server/users.d/netmeta.xml:ro
+      - ./config/clickhouse/dictionaries:/etc/clickhouse-server/dictionaries:ro
+      - ./config/clickhouse/format_schemas:/etc/clickhouse-server/format_schemas:ro
+      - ./config/data:/etc/clickhouse-server/netmeta-data:ro
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 10
+
+  # One-shot: UDFs, schema migrations and the flows_raw TTL. Re-runs on every `up`.
+  migrate:
+    image: ghcr.io/slothnetworks/netmeta-migrate:${NETMETA_IMAGE_TAG:-latest}
+    build:
+      <<: *netmeta-build
+      args: { CMD: migrate }
+    restart: on-failure
+    depends_on:
+      clickhouse: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    environment:
+      CLICKHOUSE_ADDR: clickhouse:9000
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-admin}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      RETENTION_DAYS: ${RETENTION_DAYS:-7}
+      IS_INCOMING_FLOW_FILE: /etc/netmeta/isIncomingFlow.sql
+    volumes:
+      - ./config/clickhouse/isIncomingFlow.sql:/etc/netmeta/isIncomingFlow.sql:ro
+
+  goflow2:
+    image: netsampler/goflow2:v2.2.7@sha256:b8fdc8f3666b05b0022ada3a3c8c50dcde97f7d19e3f42d050695fa0571fb952
+    restart: unless-stopped
+    # Host network: keeps the exporters' source addresses and avoids Docker's UDP NAT.
+    network_mode: host
+    depends_on:
+      kafka: { condition: service_healthy }
+    command:
+      - -listen=netflow://:${NETFLOW_PORT:-2055},netflow://:${NETFLOW_LEGACY_PORT:-2056},sflow://:${SFLOW_PORT:-6343}
+      - -format=bin
+      - -transport=kafka
+      - -transport.kafka.brokers=127.0.0.1:9092
+      - -transport.kafka.topic=flow-messages
+      - -mapping=/etc/goflow2/mapping.yaml
+      - -addr=127.0.0.1:18080
+    volumes:
+      - ./config/goflow2/mapping.yaml:/etc/goflow2/mapping.yaml:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:18080/__health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  # One-shot: makes the geoip state volume writable for the image's nonroot user (65532), also
+  # when the volume was created by an older image or by hand.
+  geoip-init:
+    image: busybox:1.37.0
+    user: "0:0"
+    command: ["chown", "-R", "65532:65532", "/var/lib/netmeta-geoip"]
+    restart: on-failure
+    volumes:
+      - geoip-data:/var/lib/netmeta-geoip
+
+  # Optional ASN/country enrichment. Does nothing unless GEOIP_PROVIDERS is set in .env.
+  geoip:
+    image: ghcr.io/slothnetworks/netmeta-geoip:${NETMETA_IMAGE_TAG:-latest}
+    build:
+      <<: *netmeta-build
+      args: { CMD: geoip }
+    restart: unless-stopped
+    user: "65532:65532"
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      geoip-init: { condition: service_completed_successfully }
+    environment:
+      CLICKHOUSE_ADDR: clickhouse:9000
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-admin}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      GEOIP_PROVIDERS: ${GEOIP_PROVIDERS:-}
+      MAXMIND_ACCOUNT_ID: ${MAXMIND_ACCOUNT_ID:-}
+      MAXMIND_LICENSE_KEY: ${MAXMIND_LICENSE_KEY:-}
+      MAXMIND_EDITIONS: ${MAXMIND_EDITIONS:-GeoLite2-ASN,GeoLite2-Country}
+      IPINFO_TOKEN: ${IPINFO_TOKEN:-}
+      GEOIP_REFRESH: ${GEOIP_REFRESH:-24h}
+      GEOIP_LOG_LEVEL: ${GEOIP_LOG_LEVEL:-}
+      ROUTEVIEWS_RIB_URL: ${ROUTEVIEWS_RIB_URL:-}
+      ROUTEVIEWS_ASNAMES_URL: ${ROUTEVIEWS_ASNAMES_URL:-}
+      GEOIP_DATA_DIR: /var/lib/netmeta-geoip
+      GEOIP_FILES_DIR: /etc/netmeta/geoip
+      GEOIP_LISTEN: ":8080"
+    # /healthz on 8080, internal only (distroless image, so no healthcheck tool).
+    expose: ["8080"]
+    volumes:
+      - geoip-data:/var/lib/netmeta-geoip
+      - ./config/geoip:/etc/netmeta/geoip:ro
+
+  grafana:
+    image: grafana/grafana:13.3.1
+    restart: unless-stopped
+    depends_on:
+      clickhouse: { condition: service_healthy }
+    # Google sign-in is switched on only when a client id is configured.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ -n "$${GF_AUTH_GOOGLE_CLIENT_ID}" ]; then export GF_AUTH_GOOGLE_ENABLED=true; fi
+        exec /run.sh
+    environment:
+      CLICKHOUSE_GRAFANA_PASSWORD: ${CLICKHOUSE_GRAFANA_PASSWORD}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://${PUBLIC_HOSTNAME:-localhost}:${GRAFANA_HTTP_PORT:-15001}/}
+      GF_SECURITY_COOKIE_SECURE: ${GRAFANA_COOKIE_SECURE:-false}
+      GF_PLUGINS_PREINSTALL: grafana-clickhouse-datasource@4.21.3,netsage-sankey-panel@1.1.4
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_SECURITY_SECRET_KEY: ${GRAFANA_SECRET_KEY:?set GRAFANA_SECRET_KEY in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_AUTO_ASSIGN_ORG_ROLE: ${GRAFANA_DEFAULT_ROLE:-Viewer}
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/home.json
+      GF_AUTH_GOOGLE_ENABLED: "false"
+      GF_AUTH_GOOGLE_CLIENT_ID: ${GRAFANA_GOOGLE_CLIENT_ID:-}
+      GF_AUTH_GOOGLE_CLIENT_SECRET: ${GRAFANA_GOOGLE_CLIENT_SECRET:-}
+      GF_AUTH_GOOGLE_ALLOWED_DOMAINS: ${GRAFANA_GOOGLE_ALLOWED_DOMAINS:-}
+      GF_AUTH_GOOGLE_ALLOW_SIGN_UP: "true"
+      GF_AUTH_GOOGLE_SCOPES: openid email profile
+    ports:
+      - "${GRAFANA_HTTP_PORT:-15001}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+
+  # TLS in front of Grafana. Enable with COMPOSE_PROFILES=tls.
+  # TLS_MODE=internal: certificate from Caddy's local CA (self-signed).
+  # TLS_MODE=acme: Let's Encrypt. The ACME challenges need Caddy on public :80 and/or :443,
+  # so set GRAFANA_HTTPS_PORT=443 and/or add "80:80" below.
+  caddy:
+    image: caddy:2.11.9
+    restart: unless-stopped
+    profiles: [tls]
+    depends_on: [grafana]
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ "$${TLS_MODE}" = acme ]; then export CADDY_TLS="$${ACME_EMAIL:?ACME_EMAIL is required for TLS_MODE=acme}"; else export CADDY_TLS=internal; fi
+        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    environment:
+      TLS_MODE: ${TLS_MODE:-internal}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+      PUBLIC_HOSTNAME: ${PUBLIC_HOSTNAME:-localhost}
+      GRAFANA_HTTPS_PORT: ${GRAFANA_HTTPS_PORT:-15002}
+    ports:
+      - "${GRAFANA_HTTPS_PORT:-15002}:${GRAFANA_HTTPS_PORT:-15002}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  kafka-data:
+  clickhouse-data:
+  geoip-data:
+  grafana-data:
+  caddy-data:
+  caddy-config:

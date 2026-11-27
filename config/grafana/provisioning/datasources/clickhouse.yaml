@@ -1,0 +1,18 @@
+# The uid is fixed: the "Sflow Overview" dashboard (and dashboards exported from the old
+# deployment) reference it directly.
+apiVersion: 1
+datasources:
+  - name: ClickHouse
+    type: grafana-clickhouse-datasource
+    uid: b315efc1-b699-4ba8-a3a2-d6c0e711c5fd
+    isDefault: true
+    editable: false
+    jsonData:
+      host: clickhouse
+      port: 8123
+      protocol: http
+      secure: false
+      username: grafana
+      defaultDatabase: default
+    secureJsonData:
+      password: $CLICKHOUSE_GRAFANA_PASSWORD
