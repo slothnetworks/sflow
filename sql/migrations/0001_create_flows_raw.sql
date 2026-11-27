@@ -1,3 +1,6 @@
+-- ClickHouse has no DDL transactions.
+-- +goose NO TRANSACTION
+
 -- +goose Up
 CREATE TABLE IF NOT EXISTS flows_raw
 (

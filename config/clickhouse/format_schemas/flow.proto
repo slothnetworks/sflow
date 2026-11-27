@@ -1,0 +1,75 @@
+// The subset of goflow2 v2.2.7 pb/flow.proto (github.com/netsampler/goflow2) that NetMeta ingests.
+// Field numbers MUST match upstream. ClickHouse matches these field names to the columns of
+// default.flows_queue (sql/migrations/0003_flows_queue.sql).
+//
+// Fields 39-42 were removed upstream in v2. They are re-added by config/goflow2/mapping.yaml
+// (formatter.protobuf), which fills them from NetFlow v9/IPFIX IEs 234, 235, 239 and 61.
+syntax = "proto3";
+package flowpb;
+
+message FlowMessage {
+  enum FlowType {
+    FLOWUNKNOWN = 0;
+    SFLOW_5 = 1;
+    NETFLOW_V5 = 2;
+    NETFLOW_V9 = 3;
+    IPFIX = 4;
+  }
+  FlowType type = 1;
+
+  uint64 time_received_ns = 110;
+  uint32 sequence_num = 4;
+  uint64 sampling_rate = 3;
+
+  bytes sampler_address = 11;
+
+  uint64 time_flow_start_ns = 111;
+  uint64 time_flow_end_ns = 112;
+
+  uint64 bytes = 9;
+  uint64 packets = 10;
+
+  bytes src_addr = 6;
+  bytes dst_addr = 7;
+
+  uint32 etype = 30;
+  uint32 proto = 20;
+
+  uint32 src_port = 21;
+  uint32 dst_port = 22;
+
+  uint32 in_if = 18;
+  uint32 out_if = 19;
+
+  uint64 src_mac = 27;
+  uint64 dst_mac = 28;
+
+  uint32 src_vlan = 33;
+  uint32 dst_vlan = 34;
+  uint32 vlan_id = 29;
+
+  uint32 ip_tos = 23;
+  uint32 forwarding_status = 24;
+  uint32 ip_ttl = 25;
+  uint32 tcp_flags = 26;
+  uint32 icmp_type = 31;
+  uint32 icmp_code = 32;
+  uint32 ipv6_flow_label = 37;
+  uint32 fragment_id = 35;
+  uint32 fragment_offset = 36;
+
+  uint32 src_as = 14;
+  uint32 dst_as = 15;
+
+  bytes next_hop = 12;
+  uint32 next_hop_as = 13;
+
+  uint32 src_net = 16;
+  uint32 dst_net = 17;
+
+  // Re-added via mapping.yaml
+  uint32 ingress_vrf_id = 39;
+  uint32 egress_vrf_id = 40;
+  uint32 bi_flow_direction = 41;
+  uint32 flow_direction = 42;
+}
