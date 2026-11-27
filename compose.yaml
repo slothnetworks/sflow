@@ -130,7 +130,7 @@ services:
   # One-shot: makes the geoip state volume writable for the image's nonroot user (65532), also
   # when the volume was created by an older image or by hand.
   geoip-init:
-    image: busybox:1.37.0
+    image: busybox:1.38.0
     user: "0:0"
     command: ["chown", "-R", "65532:65532", "/var/lib/netmeta-geoip"]
     restart: on-failure
