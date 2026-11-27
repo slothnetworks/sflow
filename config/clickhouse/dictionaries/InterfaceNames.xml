@@ -1,0 +1,36 @@
+<!-- Ported from the live NetMeta deployment (k3s, 2026-11). -->
+<clickhouse>
+  <dictionary>
+    <layout>
+      <complex_key_hashed/>
+    </layout>
+    <lifetime>60</lifetime>
+    <name>InterfaceNames</name>
+    <source>
+      <file>
+        <format>TSV</format>
+        <path>/etc/clickhouse-server/netmeta-data/interface_names.tsv</path>
+      </file>
+      <settings>
+        <format_tsv_null_representation>NULL</format_tsv_null_representation>
+      </settings>
+    </source>
+    <structure>
+      <attribute>
+        <name>Description</name>
+        <null_value/>
+        <type>String</type>
+      </attribute>
+      <key>
+        <attribute>
+          <name>Device</name>
+          <type>String</type>
+        </attribute>
+        <attribute>
+          <name>Index</name>
+          <type>UInt32</type>
+        </attribute>
+      </key>
+    </structure>
+  </dictionary>
+</clickhouse>

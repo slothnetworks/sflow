@@ -1,0 +1,34 @@
+<!-- Ported from the live NetMeta deployment (k3s, 2026-11). -->
+<clickhouse>
+  <dictionary>
+    <layout>
+      <flat/>
+    </layout>
+    <lifetime>60</lifetime>
+    <name>user_autnums</name>
+    <source>
+      <file>
+        <format>TSV</format>
+        <path>/etc/clickhouse-server/netmeta-data/own_asns.tsv</path>
+      </file>
+      <settings>
+        <format_tsv_null_representation>NULL</format_tsv_null_representation>
+      </settings>
+    </source>
+    <structure>
+      <id>
+        <name>asnum</name>
+      </id>
+      <attribute>
+        <name>name</name>
+        <null_value/>
+        <type>String</type>
+      </attribute>
+      <attribute>
+        <name>country</name>
+        <null_value/>
+        <type>String</type>
+      </attribute>
+    </structure>
+  </dictionary>
+</clickhouse>

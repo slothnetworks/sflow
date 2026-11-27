@@ -1,0 +1,31 @@
+<!-- Ported from the live NetMeta deployment (k3s, 2026-11). -->
+<clickhouse>
+  <dictionary>
+    <layout>
+      <flat/>
+    </layout>
+    <lifetime>86400</lifetime>
+    <name>risinfo_autnums</name>
+    <source>
+      <http>
+        <format>TabSeparated</format>
+        <url>http://risinfo:8080/autnums.tsv</url>
+      </http>
+    </source>
+    <structure>
+      <id>
+        <name>asnum</name>
+      </id>
+      <attribute>
+        <name>name</name>
+        <null_value/>
+        <type>String</type>
+      </attribute>
+      <attribute>
+        <name>country</name>
+        <null_value/>
+        <type>String</type>
+      </attribute>
+    </structure>
+  </dictionary>
+</clickhouse>

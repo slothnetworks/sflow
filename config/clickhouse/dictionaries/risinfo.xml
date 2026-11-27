@@ -1,0 +1,31 @@
+<!-- Ported from the live NetMeta deployment (k3s, 2026-11). -->
+<clickhouse>
+  <dictionary>
+    <layout>
+      <ip_trie>
+        <access_to_key_from_attributes>true</access_to_key_from_attributes>
+      </ip_trie>
+    </layout>
+    <lifetime>3600</lifetime>
+    <name>risinfo</name>
+    <source>
+      <http>
+        <format>TabSeparated</format>
+        <url>http://risinfo:8080/rib.tsv</url>
+      </http>
+    </source>
+    <structure>
+      <attribute>
+        <name>asnum</name>
+        <null_value>0</null_value>
+        <type>UInt32</type>
+      </attribute>
+      <key>
+        <attribute>
+          <name>prefix</name>
+          <type>String</type>
+        </attribute>
+      </key>
+    </structure>
+  </dictionary>
+</clickhouse>

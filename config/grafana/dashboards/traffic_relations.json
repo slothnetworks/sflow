@@ -1,0 +1,1204 @@
+{
+ "annotations": {
+  "list": [
+   {
+    "builtIn": 1,
+    "datasource": {
+     "type": "grafana",
+     "uid": "-- Grafana --"
+    },
+    "enable": true,
+    "hide": true,
+    "iconColor": "rgba(0, 211, 255, 1)",
+    "name": "Annotations & Alerts",
+    "target": {
+     "limit": 100,
+     "matchAny": false,
+     "tags": [],
+     "type": "dashboard"
+    },
+    "type": "dashboard"
+   }
+  ]
+ },
+ "editable": true,
+ "fiscalYearStartMonth": 0,
+ "graphTooltip": 0,
+ "links": [
+  {
+   "asDropdown": false,
+   "icon": "external link",
+   "includeVars": true,
+   "keepTime": true,
+   "tags": [
+    "netmeta"
+   ],
+   "targetBlank": false,
+   "title": "NetMeta Dashboards",
+   "tooltip": "",
+   "type": "dashboards",
+   "url": ""
+  }
+ ],
+ "liveNow": false,
+ "schemaVersion": 37,
+ "style": "dark",
+ "tags": [
+  "netmeta"
+ ],
+ "time": {
+  "from": "now-6h",
+  "to": "now"
+ },
+ "timepicker": {},
+ "timezone": "",
+ "title": "Traffic Relations",
+ "uid": "5pH2j5ank",
+ "panels": [
+  {
+   "id": 0,
+   "interval": "1s",
+   "title": "This is a preprovisioned dashboard",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 6,
+    "w": 5,
+    "x": 19,
+    "y": 0
+   },
+   "options": {
+    "code": {
+     "language": "plaintext",
+     "showLineNumbers": false,
+     "showMiniMap": false
+    },
+    "content": "This dashboard is provisioned automatically and will be overwritten when you update NetMeta.\nIf you want to make persistent changes, please create a copy.",
+    "mode": "markdown"
+   },
+   "type": "text",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": []
+  },
+  {
+   "id": 1,
+   "interval": "1s",
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "justifyMode": "auto",
+    "orientation": "auto",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "auto"
+   },
+   "title": "Filtered Flows",
+   "type": "stat",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 0,
+    "y": 0
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "fixedColor": "green",
+      "mode": "fixed"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT count()\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "interval": "1s",
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "justifyMode": "auto",
+    "orientation": "auto",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "auto"
+   },
+   "title": "Disk Usage",
+   "description": "Does not include Kafka usage (which is capped by `goflowTopicRetention` config).",
+   "type": "stat",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 5,
+    "y": 0
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "color": {
+      "fixedColor": "purple",
+      "mode": "fixed"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT sum(bytes_on_disk) FROM system.parts",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "interval": "1s",
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "justifyMode": "auto",
+    "orientation": "auto",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "auto"
+   },
+   "title": "Total Flows Stored",
+   "type": "stat",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 0,
+    "y": 3
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "fixedColor": "purple",
+      "mode": "fixed"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT count()\nFROM flows_raw",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "interval": "1s",
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "justifyMode": "auto",
+    "orientation": "auto",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "auto"
+   },
+   "title": "Effective Retention",
+   "type": "stat",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 5,
+    "y": 3
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "dtdurations",
+     "color": {
+      "fixedColor": "purple",
+      "mode": "fixed"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "select (toUnixTimestamp(now()) - TimeReceived) from flows_raw ORDER BY TimeReceived limit 1",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "interval": "1s",
+   "title": "TTL Active",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "fixedColor": "purple",
+      "mode": "fixed"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 10,
+    "y": 0
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "justifyMode": "auto",
+    "orientation": "auto",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": false
+    },
+    "textMode": "auto"
+   },
+   "type": "stat",
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT if(min(delete_ttl_info_min) == 0, 'No', 'Yes')\nFROM system.parts\nWHERE (database = 'default') AND (table = 'flows_raw')",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "interval": "1s",
+   "title": "TTL next deletion",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "fixedColor": "purple",
+      "mode": "fixed"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 10,
+    "y": 3
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "area",
+    "justifyMode": "auto",
+    "orientation": "auto",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": false
+    },
+    "textMode": "auto"
+   },
+   "type": "stat",
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT min(delete_ttl_info_min)\nFROM system.parts\nWHERE (database = 'default') AND (table = 'flows_raw')",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 6
+   },
+   "id": 7,
+   "title": "AS Relations",
+   "interval": "1s",
+   "type": "row"
+  },
+  {
+   "id": 8,
+   "interval": "1s",
+   "title": "Inbound traffic relations (Top 20)",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 24,
+    "w": 12,
+    "x": 0,
+    "y": 7
+   },
+   "options": {
+    "color": "blue",
+    "iteration": 15,
+    "monochrome": false,
+    "nodeColor": "grey",
+    "nodePadding": 6,
+    "nodeWidth": 23
+   },
+   "type": "netsage-sankey-panel",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT\n  ASNToString(SrcAS) AS SrcASName,\n  ASNToString(DstAS) AS DstASName,\n  (sum(Bytes * SamplingRate) / 1024) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nGROUP BY SrcAS, DstAS\nORDER BY Bytes DESC\nLIMIT 20",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "interval": "1s",
+   "title": "Outbound traffic relations (Top 20)",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 24,
+    "w": 12,
+    "x": 12,
+    "y": 7
+   },
+   "options": {
+    "color": "blue",
+    "iteration": 15,
+    "monochrome": false,
+    "nodeColor": "grey",
+    "nodePadding": 6,
+    "nodeWidth": 23
+   },
+   "type": "netsage-sankey-panel",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT\n  ASNToString(DstAS) AS DstASName,\n  ASNToString(SrcAS) AS SrcASName,\n  (sum(Bytes * SamplingRate) / 1024) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND NOT isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nGROUP BY SrcAS, DstAS\nORDER BY Bytes DESC\nLIMIT 20",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "interval": "1s",
+   "title": "Inbound traffic relations via interface (Top 30)",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 24,
+    "w": 12,
+    "x": 0,
+    "y": 31
+   },
+   "options": {
+    "color": "blue",
+    "iteration": 15,
+    "monochrome": false,
+    "nodeColor": "grey",
+    "nodePadding": 6,
+    "nodeWidth": 23
+   },
+   "type": "netsage-sankey-panel",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT\n  ASNToString(SrcAS) AS SrcASName,\n  InterfaceToString(SamplerAddress, OutIf) AS OutIfName,\n  ASNToString(DstAS) AS DstASName,\n  (sum(Bytes * SamplingRate) / 1024) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nGROUP BY SrcAS, DstAS, SamplerAddress, OutIf\nORDER BY Bytes DESC\nLIMIT 30",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "interval": "1s",
+   "title": "Outbound traffic relations via interface (Top 30)",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 24,
+    "w": 12,
+    "x": 12,
+    "y": 31
+   },
+   "options": {
+    "color": "blue",
+    "iteration": 15,
+    "monochrome": false,
+    "nodeColor": "grey",
+    "nodePadding": 6,
+    "nodeWidth": 23
+   },
+   "type": "netsage-sankey-panel",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT\n  ASNToString(DstAS) AS DstASName,\n  InterfaceToString(SamplerAddress, OutIf) AS OutIfName,\n  ASNToString(SrcAS) AS SrcASName,\n  (sum(Bytes * SamplingRate) / 1024) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND NOT isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nGROUP BY SrcAS, DstAS, SamplerAddress, OutIf\nORDER BY Bytes DESC\nLIMIT 30",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 32
+   },
+   "id": 12,
+   "title": "AS Relations",
+   "interval": "1s",
+   "type": "row"
+  },
+  {
+   "id": 13,
+   "interval": "1s",
+   "title": "Top 30 Flows (per IP)",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 24,
+    "w": 12,
+    "x": 0,
+    "y": 33
+   },
+   "options": {
+    "color": "blue",
+    "iteration": 7,
+    "monochrome": false,
+    "nodeColor": "grey",
+    "nodePadding": 6,
+    "nodeWidth": 28
+   },
+   "type": "netsage-sankey-panel",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT\n  if($showHostnames, HostToString(SamplerAddress, SrcAddr), IPv6ToString(SrcAddr)) AS Src,\n  if($showHostnames, HostToString(SamplerAddress, DstAddr), IPv6ToString(DstAddr)) AS Dst,\n  (sum(Bytes * SamplingRate) / 1024) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY SamplerAddress, SrcAddr, DstAddr\nORDER BY Bytes DESC\nLIMIT 30",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "interval": "1s",
+   "title": "Top 30 Flows (per IP+Port)",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 24,
+    "w": 12,
+    "x": 12,
+    "y": 33
+   },
+   "options": {
+    "color": "blue",
+    "iteration": 7,
+    "monochrome": false,
+    "nodeColor": "grey",
+    "nodePadding": 11,
+    "nodeWidth": 28
+   },
+   "type": "netsage-sankey-panel",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT\n  if($showHostnames, HostToString(SamplerAddress, SrcAddr), IPv6ToString(SrcAddr)) || ' ' || dictGetString('IPProtocols', 'Name', toUInt64(Proto)) || toString(SrcPort) as Src,\n  if($showHostnames, HostToString(SamplerAddress, DstAddr), IPv6ToString(DstAddr)) || ' ' || dictGetString('IPProtocols', 'Name', toUInt64(Proto)) ||  toString(DstPort) as Dst,\n  (sum(Bytes * SamplingRate) / 1024) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nGROUP BY SamplerAddress, SrcAddr, SrcPort, Proto, DstAddr, DstPort\nORDER BY Bytes DESC\nLIMIT 30",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 34
+   },
+   "id": 15,
+   "title": "Flows per ASN",
+   "interval": "1s",
+   "type": "row"
+  },
+  {
+   "id": 16,
+   "interval": "1s",
+   "title": "Top 30 ASN per service (inbound)",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 24,
+    "w": 12,
+    "x": 0,
+    "y": 60
+   },
+   "options": {
+    "color": "blue",
+    "iteration": 7,
+    "monochrome": false,
+    "nodeColor": "grey",
+    "nodePadding": 11,
+    "nodeWidth": 28
+   },
+   "type": "netsage-sankey-panel",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT\n  ASNToString(SrcAS) AS SrcASName,\n  if($showHostnames, HostToString(SamplerAddress, DstAddr), IPv6ToString(DstAddr)) || ' ' || dictGetString('IPProtocols', 'Name', toUInt64(Proto)) || toString(DstPort) as Dst,\n  (sum(Bytes * SamplingRate) / 1024) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nGROUP BY SrcAS, SamplerAddress, DstAddr, Proto, DstPort\nORDER BY Bytes DESC\nLIMIT 30",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "interval": "1s",
+   "title": "Top 30 ASN per service (outbound)",
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 24,
+    "w": 12,
+    "x": 12,
+    "y": 60
+   },
+   "options": {
+    "color": "blue",
+    "iteration": 7,
+    "monochrome": false,
+    "nodeColor": "grey",
+    "nodePadding": 11,
+    "nodeWidth": 28
+   },
+   "type": "netsage-sankey-panel",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-clickhouse-datasource",
+      "uid": "${datasource}"
+     },
+     "format": 0,
+     "queryType": "sql",
+     "rawSql": "SELECT\n  ASNToString(SrcAS) AS SrcASName,\n  if($showHostnames, HostToString(SamplerAddress, DstAddr), IPv6ToString(DstAddr)) || ' ' || dictGetString('IPProtocols', 'Name', toUInt64(Proto)) || toString(DstPort) as Dst,\n  (sum(Bytes * SamplingRate) / 1024) as Bytes\nFROM flows_raw\nWHERE $__timeFilter(TimeReceived)\nAND $__conditionalAll((SamplerAddress = toIPv6('$sampler')), $sampler)\nAND $__conditionalAll((SrcAddr = toIPv6('$srcIP')), $srcIP)\nAND $__conditionalAll((DstAddr = toIPv6('$dstIP')), $dstIP)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$srcNet'))), $srcNet)\nAND $__conditionalAll((isIPAddressInRange(toString(DstAddr), toIPv6Net('$dstNet'))), $dstNet)\nAND $__conditionalAll((isIPAddressInRange(toString(SrcAddr), toIPv6Net('$hostNet')) OR isIPAddressInRange(toString(DstAddr), toIPv6Net('$hostNet'))), $hostNet)\nAND $__conditionalAll((DstAS = '$dstAS'), $dstAS)\nAND $__conditionalAll((SrcAS = '$srcAS'), $srcAS)\nAND $__conditionalAll((NextHop = toIPv6('$nextHop')), $nextHop)\nAND $__conditionalAll(((toString(SamplerAddress) || '-' || toString(InIf)) = '$interface' OR (toString(SamplerAddress) || '-' || toString(OutIf)) = '$interface'), $interface)\nAND $__conditionalAll(($extra), $extra)\nAND $__conditionalAll((SrcAddr = toIPv6('$hostIP') OR DstAddr = toIPv6('$hostIP')), $hostIP)\nAND NOT isIncomingFlow(SamplerAddress, SrcAddr, DstAddr, SrcAS, DstAS, FlowDirection)\nGROUP BY SrcAS, SamplerAddress, DstAddr, Proto, DstPort\nORDER BY Bytes DESC\nLIMIT 30",
+     "refId": "A"
+    }
+   ]
+  }
+ ],
+ "templating": {
+  "list": [
+   {
+    "current": {
+     "selected": false,
+     "text": "ClickHouse",
+     "value": "ClickHouse"
+    },
+    "hide": 0,
+    "includeAll": false,
+    "label": "Datasource",
+    "multi": false,
+    "name": "datasource",
+    "options": [],
+    "query": "grafana-clickhouse-datasource",
+    "refresh": 1,
+    "regex": "",
+    "skipUrlSync": false,
+    "type": "datasource"
+   },
+   {
+    "hide": 2,
+    "name": "clickhouse_adhoc_query",
+    "query": "default.flows_raw",
+    "type": "constant",
+    "skipUrlSync": false
+   },
+   {
+    "current": {
+     "isNone": true,
+     "selected": false,
+     "text": "All",
+     "value": ""
+    },
+    "datasource": {
+     "type": "grafana-clickhouse-datasource",
+     "uid": "${datasource}"
+    },
+    "definition": "SELECT\n    toString(SamplerAddress),\n\t\tSamplerToString(SamplerAddress)\nFROM (\n    SELECT\n        DISTINCT SamplerAddress\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)",
+    "hide": 0,
+    "includeAll": true,
+    "label": "Sampler",
+    "multi": false,
+    "name": "sampler",
+    "options": [],
+    "query": "SELECT\n    toString(SamplerAddress),\n\t\tSamplerToString(SamplerAddress)\nFROM (\n    SELECT\n        DISTINCT SamplerAddress\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)",
+    "refresh": 2,
+    "regex": "",
+    "skipUrlSync": false,
+    "sort": 0,
+    "type": "query"
+   },
+   {
+    "current": {
+     "isNone": true,
+     "selected": false,
+     "text": "All",
+     "value": ""
+    },
+    "datasource": {
+     "type": "grafana-clickhouse-datasource",
+     "uid": "${datasource}"
+    },
+    "definition": "SELECT\n    (toString(SamplerAddress) || '-' || toString(InIf)),\n    InterfaceToString(SamplerAddress, InIf)\nFROM (\n    SELECT DISTINCT SamplerAddress,\n                    InIf\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)\nUNION ALL\nSELECT\n    (toString(SamplerAddress) || '-' || toString(OutIf)),\n    InterfaceToString(SamplerAddress, OutIf)\nFROM (\n    SELECT DISTINCT SamplerAddress,\n                    OutIf\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)",
+    "hide": 0,
+    "includeAll": true,
+    "label": "Interface",
+    "multi": false,
+    "name": "interface",
+    "options": [],
+    "query": "SELECT\n    (toString(SamplerAddress) || '-' || toString(InIf)),\n    InterfaceToString(SamplerAddress, InIf)\nFROM (\n    SELECT DISTINCT SamplerAddress,\n                    InIf\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)\nUNION ALL\nSELECT\n    (toString(SamplerAddress) || '-' || toString(OutIf)),\n    InterfaceToString(SamplerAddress, OutIf)\nFROM (\n    SELECT DISTINCT SamplerAddress,\n                    OutIf\n    FROM flows_raw\n    WHERE $__timeFilter(TimeReceived)\n)",
+    "refresh": 2,
+    "regex": "",
+    "skipUrlSync": false,
+    "sort": 0,
+    "type": "query"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "show",
+     "value": "true"
+    },
+    "hide": 0,
+    "includeAll": false,
+    "label": "Show Hostnames",
+    "multi": false,
+    "name": "showHostnames",
+    "options": [
+     {
+      "selected": true,
+      "text": "show",
+      "value": "true"
+     },
+     {
+      "selected": false,
+      "text": "hide",
+      "value": "false"
+     }
+    ],
+    "query": "show : true,hide : false",
+    "queryValue": "",
+    "skipUrlSync": false,
+    "type": "custom"
+   },
+   {
+    "datasource": {
+     "type": "grafana-clickhouse-datasource",
+     "uid": "${datasource}"
+    },
+    "filters": [],
+    "hide": 0,
+    "name": "ad_hoc_query",
+    "label": "Custom Filters",
+    "skipUrlSync": false,
+    "type": "adhoc"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Src IP",
+    "name": "srcIP",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Dst IP",
+    "name": "dstIP",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Src/Dst IP",
+    "name": "hostIP",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Src Subnet",
+    "name": "srcNet",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Dst Subnet",
+    "name": "dstNet",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Src/Dst Subnet",
+    "name": "hostNet",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Next Hop IP",
+    "name": "nextHop",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Src AS",
+    "name": "srcAS",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Dst AS",
+    "name": "dstAS",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   },
+   {
+    "current": {
+     "selected": false,
+     "text": "",
+     "value": ""
+    },
+    "hide": 0,
+    "label": "Custom SQL",
+    "name": "extra",
+    "options": [],
+    "skipUrlSync": false,
+    "type": "textbox"
+   }
+  ]
+ },
+ "version": 1,
+ "weekStart": ""
+}

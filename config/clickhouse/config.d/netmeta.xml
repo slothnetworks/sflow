@@ -1,0 +1,70 @@
+<!--
+  NetMeta ClickHouse server settings.
+
+  The system log TTLs matter: on the old k3s deployment trace_log, metric_log and
+  asynchronous_metric_log had no TTL and grew to ~65 GiB, filling the disk.
+-->
+<clickhouse>
+    <listen_host>::</listen_host>
+    <listen_host>0.0.0.0</listen_host>
+    <listen_try>1</listen_try>
+
+    <logger>
+        <level>information</level>
+        <console>1</console>
+    </logger>
+
+    <dictionaries_config>dictionaries/*.xml</dictionaries_config>
+    <format_schema_path>/etc/clickhouse-server/format_schemas/</format_schema_path>
+
+    <!-- Bounded system logs -->
+    <query_log replace="1">
+        <database>system</database>
+        <table>query_log</table>
+        <engine>ENGINE = MergeTree PARTITION BY event_date ORDER BY event_time TTL event_date + INTERVAL 14 DAY</engine>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </query_log>
+    <part_log replace="1">
+        <database>system</database>
+        <table>part_log</table>
+        <engine>ENGINE = MergeTree PARTITION BY event_date ORDER BY event_time TTL event_date + INTERVAL 14 DAY</engine>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </part_log>
+    <metric_log replace="1">
+        <database>system</database>
+        <table>metric_log</table>
+        <engine>ENGINE = MergeTree PARTITION BY event_date ORDER BY event_time TTL event_date + INTERVAL 7 DAY</engine>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        <collect_interval_milliseconds>10000</collect_interval_milliseconds>
+    </metric_log>
+    <asynchronous_metric_log replace="1">
+        <database>system</database>
+        <table>asynchronous_metric_log</table>
+        <engine>ENGINE = MergeTree PARTITION BY event_date ORDER BY event_time TTL event_date + INTERVAL 7 DAY</engine>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </asynchronous_metric_log>
+    <error_log replace="1">
+        <database>system</database>
+        <table>error_log</table>
+        <engine>ENGINE = MergeTree PARTITION BY event_date ORDER BY event_time TTL event_date + INTERVAL 14 DAY</engine>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </error_log>
+    <processors_profile_log replace="1">
+        <database>system</database>
+        <table>processors_profile_log</table>
+        <engine>ENGINE = MergeTree PARTITION BY event_date ORDER BY event_time TTL event_date + INTERVAL 3 DAY</engine>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </processors_profile_log>
+
+    <!-- Not needed for NetMeta, and the main source of unbounded growth -->
+    <trace_log remove="1"/>
+    <text_log remove="1"/>
+    <query_thread_log remove="1"/>
+    <query_views_log remove="1"/>
+    <opentelemetry_span_log remove="1"/>
+    <session_log remove="1"/>
+    <latency_log remove="1"/>
+    <query_metric_log remove="1"/>
+    <blob_storage_log remove="1"/>
+    <background_schedule_pool_log remove="1"/>
+</clickhouse>
