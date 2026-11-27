@@ -55,7 +55,7 @@ services:
       retries: 10
 
   clickhouse:
-    image: clickhouse/clickhouse-server:25.8.33.6
+    image: clickhouse/clickhouse-server:26.10.12.13
     restart: unless-stopped
     environment:
       CLICKHOUSE_USER: ${CLICKHOUSE_USER:-admin}
