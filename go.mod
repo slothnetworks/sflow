@@ -6,14 +6,10 @@ require (
 	cuelang.org/go v0.11.0
 	github.com/ClickHouse/clickhouse-go/v2 v2.51.0
 	github.com/emicklei/proto v1.14.3
-	github.com/gopacket/gopacket v1.8.1
 	github.com/huandu/go-sqlbuilder v1.44.2
-	github.com/netsampler/goflow2 v1.3.8
 	github.com/netsampler/goflow2/v2 v2.2.7
 	github.com/osrg/gobgp v2.0.0+incompatible
 	github.com/pressly/goose/v3 v3.30.2
-	github.com/sirupsen/logrus v1.10.2
-	github.com/vishvananda/netlink v1.3.1
 	k8s.io/klog/v2 v2.140.0
 )
 
@@ -47,7 +43,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
@@ -98,7 +93,6 @@ require (
 	github.com/tetratelabs/wazero v1.12.0 // indirect
 	github.com/tursodatabase/libsql-client-go v0.0.0-20260528064733-9d5d30a29a60 // indirect
 	github.com/vertica/vertica-sql-go v1.3.9 // indirect
-	github.com/vishvananda/netns v0.0.5 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.2.0 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect

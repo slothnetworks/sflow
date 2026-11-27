@@ -73,22 +73,8 @@ For Linux hosts, there's a custom agent on the roadmap that directly pushes to K
 and get better data that includes the flow direction.
 In the meantime, hsflowd is your best bet for collecting samples from a host.
 
-## Port Mirror collector
+## Port mirrors and fibre taps
 
-If you have an interface pair that receives a copy of your traffic like a port mirror or fibre tap, you can use
-NetMeta's integrated collector to directly sample traffic without requiring an sFlow collector.
-
-You can either deploy the collector to a remote host, or have it deployed automatically on your monitoring host:
-
-```cue
-netmeta: config: {
-    [...]
-    portMirror: {
-      interfaces: "tap_rx:tap_tx,tap2_rx:tap2_tx"
-      sampleRate: 100
-    }
-}
-```
-
-You have to configure which interfaces the collector should listen on. You can have multiple pairs by
-separating them with a comma. You can also configure the sample rate.
+NetMeta no longer ships its own AF_PACKET collector. To sample traffic from a mirror port or tap, run
+[hsflowd](https://github.com/sflow/host-sflow) with its `pcap` module on the capture interface and point its
+sFlow output at NetMeta's sFlow port (6343/udp).

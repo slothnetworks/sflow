@@ -176,7 +176,7 @@ _trafficStatistics: [{
 	}]
 }, {
 	title:       "Traffic per Ingress Interface"
-	description: "The traffic based on the ingress interface. If you are using the portmirror, you'll see another interface with the ID 0. This is correct and is the sum of all outgoing traffic of the sampler"
+	description: "The traffic based on the ingress interface."
 	type:        "timeseries"
 	gridPos: {h: 12, w: 12, x: 0, y: 43}
 	fieldConfig: overrides: [_negativeYOut]
@@ -187,7 +187,7 @@ _trafficStatistics: [{
 	}]
 }, {
 	title:       "Traffic per Egress Interface"
-	description: "The traffic based on the egress interface. If you are using the portmirror, you'll see another interface with the ID 0. This is correct and is the sum of all incoming traffic of the sampler"
+	description: "The traffic based on the egress interface."
 	type:        "timeseries"
 	gridPos: {h: 12, w: 12, x: 12, y: 43}
 	fieldConfig: overrides: [_negativeYOut]

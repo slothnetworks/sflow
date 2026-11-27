@@ -28,7 +28,6 @@ NetMeta captures, aggregates and analyzes events from a variety of data sources:
 
 * sFlow
 * NetFlow/IPFIX
-* Port Mirror (AF_PACKET)
 * Linux NFLOG (soon)
 * Linux conntrack (soon)
 * Scamper traces (soon)
