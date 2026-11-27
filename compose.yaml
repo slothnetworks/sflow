@@ -186,7 +186,9 @@ services:
       CLICKHOUSE_GRAFANA_PASSWORD: ${CLICKHOUSE_GRAFANA_PASSWORD}
       GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://${PUBLIC_HOSTNAME:-localhost}:${GRAFANA_HTTP_PORT:-15001}/}
       GF_SECURITY_COOKIE_SECURE: ${GRAFANA_COOKIE_SECURE:-false}
-      GF_PLUGINS_PREINSTALL: grafana-clickhouse-datasource@4.21.3,netsage-sankey-panel@1.1.4
+      # Installed before Grafana starts serving, so "healthy" means the datasource plugin is there.
+      GF_PLUGINS_PREINSTALL_SYNC: grafana-clickhouse-datasource@4.21.3,netsage-sankey-panel@1.1.4
+      GF_PLUGINS_PREINSTALL_AUTO_UPDATE: "false"
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
       GF_SECURITY_SECRET_KEY: ${GRAFANA_SECRET_KEY:?set GRAFANA_SECRET_KEY in .env}

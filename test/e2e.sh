@@ -202,8 +202,13 @@ python3 -I "$ROOT/test/dashboard_queries.py" --url "$CH_URL" --user grafana \
 log "querying through the bundled Grafana"
 G="http://127.0.0.1:${GRAFANA_HTTP_PORT:-15001}"
 DS_UID=b315efc1-b699-4ba8-a3a2-d6c0e711c5fd
-curl -sS --fail-with-body -u "admin:$GRAFANA_ADMIN_PASSWORD" "$G/api/datasources/uid/$DS_UID/health" |
-	grep -q '"status":"OK"' || fail "Grafana's ClickHouse datasource is not healthy"
+health=""
+for _ in $(seq 1 30); do
+	health=$(curl -sS -u "admin:$GRAFANA_ADMIN_PASSWORD" "$G/api/datasources/uid/$DS_UID/health" || true)
+	grep -q '"status":"OK"' <<<"$health" && break
+	sleep 3
+done
+grep -q '"status":"OK"' <<<"$health" || fail "Grafana's ClickHouse datasource is not healthy: $health"
 for uid in 9Dw5dGzGk; do
 	curl -sS --fail-with-body -o /dev/null -u "admin:$GRAFANA_ADMIN_PASSWORD" "$G/api/dashboards/uid/$uid" ||
 		fail "dashboard $uid is not provisioned"
