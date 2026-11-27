@@ -1,0 +1,42 @@
+<!-- Ported from the live NetMeta deployment (k3s, 2026-11). -->
+<clickhouse>
+  <dictionary>
+    <layout>
+      <complex_key_hashed/>
+    </layout>
+    <lifetime>60</lifetime>
+    <name>SamplerConfig</name>
+    <source>
+      <file>
+        <format>TSV</format>
+        <path>/etc/clickhouse-server/netmeta-data/samplers.tsv</path>
+      </file>
+      <settings>
+        <format_tsv_null_representation>NULL</format_tsv_null_representation>
+      </settings>
+    </source>
+    <structure>
+      <key>
+        <attribute>
+          <name>Device</name>
+          <type>String</type>
+        </attribute>
+      </key>
+      <attribute>
+        <name>SamplingRate</name>
+        <null_value/>
+        <type>Nullable(UInt64)</type>
+      </attribute>
+      <attribute>
+        <name>Description</name>
+        <null_value/>
+        <type>Nullable(String)</type>
+      </attribute>
+      <attribute>
+        <name>AnonymizeAddresses</name>
+        <null_value>false</null_value>
+        <type>Bool</type>
+      </attribute>
+    </structure>
+  </dictionary>
+</clickhouse>

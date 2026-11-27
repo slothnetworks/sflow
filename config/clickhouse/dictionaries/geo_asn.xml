@@ -1,0 +1,37 @@
+<!-- Optional asn enrichment: longest-prefix match on geo.asn, which the geoip loader fills.
+     Empty (every lookup returns the default) unless GEOIP_PROVIDERS is set. -->
+<clickhouse>
+  <dictionary>
+    <name>geo_asn</name>
+    <source>
+      <clickhouse>
+        <user>admin</user>
+        <password from_env="CLICKHOUSE_PASSWORD"/>
+        <db>geo</db>
+        <table>asn</table>
+      </clickhouse>
+    </source>
+    <layout>
+      <ip_trie>
+        <access_to_key_from_attributes>true</access_to_key_from_attributes>
+      </ip_trie>
+    </layout>
+    <structure>
+      <key>
+        <attribute>
+          <name>network</name>
+          <type>String</type>
+        </attribute>
+      </key>
+      <attribute>
+        <name>asn</name>
+        <type>UInt32</type>
+        <null_value>0</null_value>
+      </attribute>
+    </structure>
+    <lifetime>
+      <min>300</min>
+      <max>600</max>
+    </lifetime>
+  </dictionary>
+</clickhouse>

@@ -1,0 +1,34 @@
+<!-- Ported from the live NetMeta deployment (k3s, 2026-11). -->
+<clickhouse>
+  <dictionary>
+    <layout>
+      <flat/>
+    </layout>
+    <lifetime>3600</lifetime>
+    <name>autnums</name>
+    <source>
+      <clickhouse>
+        <user>admin</user>
+        <password from_env="CLICKHOUSE_PASSWORD"/>
+        <query>SELECT asn AS asnum, name, country FROM geo.asn_names
+UNION ALL
+SELECT * FROM dictionaries.user_autnums</query>
+      </clickhouse>
+    </source>
+    <structure>
+      <id>
+        <name>asnum</name>
+      </id>
+      <attribute>
+        <name>name</name>
+        <null_value/>
+        <type>String</type>
+      </attribute>
+      <attribute>
+        <name>country</name>
+        <null_value/>
+        <type>String</type>
+      </attribute>
+    </structure>
+  </dictionary>
+</clickhouse>

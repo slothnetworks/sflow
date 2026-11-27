@@ -1,0 +1,23 @@
+<!--
+  The admin user (CLICKHOUSE_USER / CLICKHOUSE_PASSWORD) is created by the official image's
+  entrypoint and, like the old deployment, accepts connections from any address.
+  This adds a read-only user for Grafana. readonly=2 lets the datasource plugin set
+  per-query settings while still forbidding writes.
+-->
+<clickhouse>
+    <profiles>
+        <grafana_readonly>
+            <readonly>2</readonly>
+        </grafana_readonly>
+    </profiles>
+    <users>
+        <grafana>
+            <password from_env="CLICKHOUSE_GRAFANA_PASSWORD"/>
+            <profile>grafana_readonly</profile>
+            <quota>default</quota>
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+        </grafana>
+    </users>
+</clickhouse>

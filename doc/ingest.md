@@ -1,5 +1,38 @@
 # Ingest
 
+## Collector
+
+NetMeta collects flows with [goflow2](https://github.com/netsampler/goflow2) v2, which runs with host networking so
+it sees the real exporter source addresses. It listens on UDP:
+
+| Port | Listener     | Accepts                     |
+|------|--------------|-----------------------------|
+| 2055 | `netflow://` | NetFlow v5, NetFlow v9, IPFIX |
+| 2056 | `netflow://` | NetFlow v5, NetFlow v9, IPFIX |
+| 6343 | `sflow://`   | sFlow v5                    |
+
+The ports are the same as in older NetMeta releases, so exporters don't need to change. Older releases ran a
+dedicated NetFlow v5 (`nfl://`) listener on 2056. goflow2 v2 has no `nfl` scheme; its `netflow://` listener decodes
+v5 as well as v9 and IPFIX, so 2056 is now a second `netflow://` listener and v5 exporters keep working on either
+port.
+
+goflow2 writes protobuf messages to Kafka (topic `flow-messages`), and ClickHouse consumes them into
+`flows_raw`. Its Prometheus metrics are on `http://127.0.0.1:18080/metrics` (loopback only); see
+[operations.md](operations.md#goflow2-metrics).
+
+Restrict the UDP ports to your exporters' addresses with a host or network firewall.
+
+## Flow direction
+
+NetFlow and IPFIX exporters can report a flow direction (ingress or egress); sFlow carries none. The dashboards
+split traffic into "in" and "out" with the ClickHouse function `isIncomingFlow`, which by default trusts the
+exporter's direction field. With sFlow that field is always 0, so every flow counts as "in".
+
+To classify sFlow traffic, edit [`config/clickhouse/isIncomingFlow.sql`](../config/clickhouse/isIncomingFlow.sql).
+It has examples of per-sampler rules, for instance "traffic to our prefix is incoming" or "traffic not sourced from
+our ASN is incoming". Apply the change with `docker compose up -d --force-recreate migrate`; see
+[operations.md](operations.md#editing-isincomingflow).
+
 ## sFlow vs Netflow/IPFIX
 
 **sFlow** is a very simple protocol. In its simplest form, every n-th packet is sampled and the packet header is sent
@@ -36,9 +69,9 @@ A worst-case flood at line rate would generate 7kpps of sFlow samples.
 If Netflow/IPFIX is used, make sure to pick an appropriate sampling rate and flow table size for worst-case workloads.
 There are many different implementations that perform very differently - refer to vendor documentation for specifics.
 
-Depending on your aggregation interval, you may want to set a minimum display interval in the NetMeta config:
-
-    dashboardDisplay: minInterval: "15s"
+Depending on your aggregation interval, you may want to raise the minimum interval of the Grafana panels
+(the datasource's or the panel's "Min interval" setting, e.g. `15s`) so that graphs don't show gaps between
+flow exports.
 
 ## Host sFlow collector
 
@@ -73,22 +106,8 @@ For Linux hosts, there's a custom agent on the roadmap that directly pushes to K
 and get better data that includes the flow direction.
 In the meantime, hsflowd is your best bet for collecting samples from a host.
 
-## Port Mirror collector
+## Port mirrors and fibre taps
 
-If you have an interface pair that receives a copy of your traffic like a port mirror or fibre tap, you can use
-NetMeta's integrated collector to directly sample traffic without requiring an sFlow collector.
-
-You can either deploy the collector to a remote host, or have it deployed automatically on your monitoring host:
-
-```cue
-netmeta: config: {
-    [...]
-    portMirror: {
-      interfaces: "tap_rx:tap_tx,tap2_rx:tap2_tx"
-      sampleRate: 100
-    }
-}
-```
-
-You have to configure which interfaces the collector should listen on. You can have multiple pairs by
-separating them with a comma. You can also configure the sample rate.
+NetMeta no longer ships its own AF_PACKET collector. To sample traffic from a mirror port or tap, run
+[hsflowd](https://github.com/sflow/host-sflow) with its `pcap` module on the capture interface and point its
+sFlow output at NetMeta's sFlow port (6343/udp).

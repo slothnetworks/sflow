@@ -1,0 +1,198 @@
+{
+ "editable": true,
+ "fiscalYearStartMonth": 0,
+ "graphTooltip": 0,
+ "liveNow": false,
+ "schemaVersion": 37,
+ "style": "dark",
+ "time": {
+  "from": "now-6h",
+  "to": "now"
+ },
+ "timepicker": {},
+ "timezone": "",
+ "title": "Home",
+ "uid": "NJoydihVk",
+ "panels": [
+  {
+   "id": 0,
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "options": {
+    "code": {
+     "language": "plaintext",
+     "showLineNumbers": false,
+     "showMiniMap": false
+    },
+    "content": "<div style=\"display: flex; background-size: cover; height: 100%; align-items: center; padding: 0 16px; justify-content: space-between; padding: 0 24px;\">\n    <h1 style=\"margin-bottom: 0;\">Welcome to NetMeta</h1>\n    <div style=\"display: flex; align-items: baseline;\">\n        <h3 style=\"margin-bottom: 0; margin-right: 16px\">Need help?</h3>\n        <div style=\"display: flex; flex-wrap: wrap;\">\n            <a style=\"margin-right: 16px; text-decoration: underline; text-wrap: no-wrap; color: rgb(204, 204, 220);\"\n               href=\"https://github.com/monogon-dev/NetMeta/issues\" target=\"_blank\">\n                Issue Tracker\n            </a>\n            <a style=\"margin-right: 16px; text-decoration: underline; text-wrap: no-wrap; color: rgb(204, 204, 220);\"\n               href=\"mailto:contact@monogon.tech\">\n                Contact Us\n            </a>\n        </div>\n    </div>\n</div>",
+    "mode": "html"
+   },
+   "title": "",
+   "type": "text",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "interval": "1s",
+   "targets": []
+  },
+  {
+   "id": 1,
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 6,
+    "w": 12,
+    "x": 0,
+    "y": 3
+   },
+   "options": {
+    "maxItems": 0,
+    "query": "",
+    "showHeadings": false,
+    "showRecentlyViewed": false,
+    "showSearch": true,
+    "showStarred": false,
+    "tags": [
+     "netmeta"
+    ]
+   },
+   "title": "NetMeta Dashboards",
+   "type": "dashlist",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "interval": "1s",
+   "targets": []
+  },
+  {
+   "id": 2,
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 9,
+    "w": 12,
+    "x": 0,
+    "y": 9
+   },
+   "options": {
+    "maxItems": 0,
+    "query": "Clickhouse -",
+    "showHeadings": false,
+    "showRecentlyViewed": false,
+    "showSearch": true,
+    "showStarred": false,
+    "tags": []
+   },
+   "title": "Clickhouse Dashboards",
+   "type": "dashlist",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "interval": "1s",
+   "targets": []
+  },
+  {
+   "id": 3,
+   "datasource": {
+    "type": "grafana-clickhouse-datasource",
+    "uid": "${datasource}"
+   },
+   "gridPos": {
+    "h": 15,
+    "w": 12,
+    "x": 12,
+    "y": 3
+   },
+   "options": {
+    "feedUrl": "https://netmeta-cache.leoluk.de/v1/releases.atom",
+    "showImage": true
+   },
+   "title": "NetMeta News",
+   "type": "news",
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "fixedColor": "green",
+      "mode": "palette-classic"
+     },
+     "mappings": [],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "interval": "1s",
+   "targets": []
+  }
+ ],
+ "templating": {},
+ "version": 1,
+ "weekStart": ""
+}

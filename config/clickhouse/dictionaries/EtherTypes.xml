@@ -1,0 +1,29 @@
+<!-- Ported from the live NetMeta deployment (k3s, 2026-11). -->
+<clickhouse>
+  <dictionary>
+    <layout>
+      <flat/>
+    </layout>
+    <lifetime>60</lifetime>
+    <name>EtherTypes</name>
+    <source>
+      <file>
+        <format>TSV</format>
+        <path>/etc/clickhouse-server/dictionaries/EtherTypes.tsv</path>
+      </file>
+      <settings>
+        <format_tsv_null_representation>NULL</format_tsv_null_representation>
+      </settings>
+    </source>
+    <structure>
+      <attribute>
+        <name>Name</name>
+        <null_value>0</null_value>
+        <type>String</type>
+      </attribute>
+      <id>
+        <name>ID</name>
+      </id>
+    </structure>
+  </dictionary>
+</clickhouse>
